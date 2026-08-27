@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Halaman diagnostik internal — tidak perlu diindeks
+Disallow: /tes-konversi.html
+Disallow: /kelola-8f3a.html
+
+Sitemap: https://machelcrochet.my.id/sitemap.xml
