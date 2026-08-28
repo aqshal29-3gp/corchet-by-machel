@@ -1,0 +1,4 @@
+# Agent tooling (skills) — lokal, bukan bagian dari website
+.agents/
+.claude/
+skills-lock.json
