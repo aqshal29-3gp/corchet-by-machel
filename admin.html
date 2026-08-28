@@ -9,1010 +9,1421 @@
 <x-dc>
 <helmet>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f0f2e8">
+<title>Panel Admin — Machel Crochet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --navy:#0B2545; --navy-2:#12325C; --navy-3:#1B4079;
-    --bg:#F3F5FA; --surface:#FFFFFF; --surface-2:#F8FAFC; --surface-3:#EFF3F9;
-    --line:#E3E8F0; --line-2:#EDF1F7;
-    --ink:#0B2545; --ink-2:#4A5A72; --ink-3:#7C8AA0;
-    --green:#0E9F6E; --green-bg:#E6F6EF;
-    --amber:#C98A00; --amber-bg:#FDF4E1;
-    --red:#D93B3B;  --red-bg:#FDECEC;
-    --blue:#2563C9;
-    --shadow:0 1px 2px rgba(11,37,69,.05), 0 8px 24px -12px rgba(11,37,69,.18);
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; background: #f0f2e8; font-family: 'DM Sans', system-ui, sans-serif; color: #2C3327; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  input, textarea, select, button { font-family: inherit; font-size: 16px; }
+  a { color: #55763F; }
+  a:hover { color: #658146; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+  .tabs::-webkit-scrollbar { height: 0; }
+  .rows::-webkit-scrollbar { width: 5px; }
+  .rows::-webkit-scrollbar-thumb { background: #d3dec6; border-radius: 4px; }
+
+  .shell { display: grid; grid-template-columns: 336px 1fr; gap: 18px; align-items: start; }
+  .fgrid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .fgrid > * { grid-column: span 1 !important; }
+  .irow { display: grid; grid-template-columns: 1fr 72px 128px 42px; gap: 8px; align-items: center; }
+  .invcols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+  .invcols > .card, .shell > .card, .shell > .side { min-width: 0; }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (min-width: 780px) { .statgrid { grid-template-columns: repeat(3, 1fr) !important; } }
+  .duo > label { min-width: 0; }
+  .setwrap { max-width: 640px; margin: 0 auto; }
+  .only-hp { display: none !important; }
+
+  @media (min-width: 1000px) { .fgrid { grid-template-columns: 1fr 1fr; } .fgrid > .wide { grid-column: span 2 !important; } }
+
+  @media (max-width: 900px) {
+    .shell, .invcols { grid-template-columns: 1fr; gap: 14px; }
+    .side { position: static !important; }
+    .only-hp { display: flex !important; }
+    .only-desk { display: none !important; }
+    .shell.editing .side { display: none; }
+    .shell.browsing .main { display: none; }
+    .rows { max-height: none !important; }
+    .irow { grid-template-columns: 84px 1fr 42px; grid-template-areas: "nama nama hapus" "qty harga harga"; }
+    .irow .i-nama { grid-area: nama; }
+    .irow .i-hapus { grid-area: hapus; }
+    .irow .i-qty { grid-area: qty; }
+    .irow .i-harga { grid-area: harga; }
+    .actions { position: sticky; bottom: 0; z-index: 5; margin: 0 -18px -18px; padding: 13px 18px calc(13px + env(safe-area-inset-bottom, 0px)); background: rgba(255,255,255,.96); backdrop-filter: blur(8px); border-top: 1px solid #e5eedb; border-radius: 0 0 20px 20px; }
+    .card { padding: 18px !important; }
+    .wrap { padding-left: 14px !important; padding-right: 14px !important; }
+    .hbar { padding-left: 14px !important; padding-right: 14px !important; }
   }
-  [data-theme="dark"]{
-    --navy:#0A1526; --navy-2:#0F1F36; --navy-3:#1B3A66;
-    --bg:#070E1A; --surface:#0E1A2D; --surface-2:#13233B; --surface-3:#17293F;
-    --line:#1E3050; --line-2:#182842;
-    --ink:#EAF1FB; --ink-2:#A6B6CE; --ink-3:#7488A4;
-    --green:#34D399; --green-bg:#0C2A22;
-    --amber:#FBBF24; --amber-bg:#2C2310;
-    --red:#F87171;  --red-bg:#301617;
-    --blue:#60A5FA;
-    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-  a{color:var(--blue);text-decoration:none}
-  a:hover{color:var(--navy-3);text-decoration:underline}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-  input,select,button,textarea{font-size:16px}          /* cegah zoom otomatis iOS */
-  @media (min-width:640px){input,select,button,textarea{font-size:inherit}}
-  @media (max-width:640px){
-    .om-pad{padding-left:14px !important;padding-right:14px !important}
-    .om-tap{min-height:44px}
+
+  @media (max-width: 400px) {
+    .card { padding: 15px !important; border-radius: 18px !important; }
+    .wrap, .hbar { padding-left: 11px !important; padding-right: 11px !important; }
+    .htoko { font-size: 14.5px !important; }
+    .actions { margin: 0 -15px -15px; padding: 12px 15px calc(12px + env(safe-area-inset-bottom, 0px)); }
+    .setrow { padding: 13px 13px !important; }
+    .irow { grid-template-columns: 76px 1fr 40px; }
   }
 </style>
 </helmet>
 
-<sc-if value="{{ belumMasuk }}" hint-placeholder-val="{{ true }}">
-  <dc-import name="AuthGate" on-masuk="{{ onMasuk }}" hint-size="100%,100vh"></dc-import>
-</sc-if>
+<template id="__bundler_thumbnail" data-bg-color="#55763F">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#55763F"></rect>
+    <rect x="360" y="250" width="480" height="300" rx="42" fill="#FBFCF6"></rect>
+    <rect x="430" y="330" width="340" height="34" rx="17" fill="#DEE7CD"></rect>
+    <rect x="430" y="396" width="230" height="34" rx="17" fill="#DEE7CD"></rect>
+    <rect x="430" y="462" width="340" height="46" rx="23" fill="#55763F"></rect>
+  </svg>
+</template>
 
-<sc-if value="{{ sudahMasuk }}" hint-placeholder-val="{{ false }}">
-<div data-theme="{{ theme }}" style="min-height:100vh;color:var(--ink);background:var(--bg)">
+<div style="min-height:100vh;background:#f0f2e8">
 
-  <header style="position:sticky;top:0;z-index:20;background:linear-gradient(180deg,var(--navy) 0%,var(--navy-2) 100%);color:#fff">
-    <div class="om-pad" style="max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:14px">
-      <div style="display:flex;align-items:center;gap:14px;flex:1 1 300px;min-width:0">
-        <div title="Logo Kementerian Imigrasi dan Pemasyarakatan" style="width:50px;height:50px;flex:0 0 auto;position:relative;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);display:grid;place-items:center">
-          <span style="font-weight:800;font-size:11px;letter-spacing:.06em;color:rgba(255,255,255,.9)">IMIPAS</span>
-          <img src="logo.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:5px">
+  <sc-if value="{{ perluLogin }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:0 18px 40px">
+      <div style="max-width:400px;margin:0 auto;padding-top:10vh;animation:fadeUp .4s ease both">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:44px;height:44px;border-radius:14px;background:#55763F;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5V8a5.5 5.5 0 0 1 11 0v2.5"></path><rect x="4.5" y="10.5" width="15" height="9.5" rx="2.6"></rect></svg>
+          </span>
+          <div>
+            <p style="margin:0;font-family:'Quicksand';font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#7E9B62">Machel Crochet</p>
+            <h1 style="margin:2px 0 0;font-family:'Quicksand';font-weight:700;font-size:23px;letter-spacing:-.2px">Panel Admin</h1>
+          </div>
         </div>
-        <div style="min-width:0">
-          <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.62);font-weight:600">Panel Admin / TU · Internal</div>
-          <h1 style="margin:2px 0 0;font-size:18px;font-weight:800;letter-spacing:-.01em">Pengelolaan Berkas, Pagu &amp; RPD</h1>
+
+        <div style="margin-top:20px;background:#fff;border:1px solid #d7e2ca;border-radius:22px;padding:24px 22px;box-shadow:0 18px 40px rgba(61,44,37,.09)">
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#6B7760">Masukkan PIN untuk mengelola stok, pesanan, dan tagihan.</p>
+
+          <input value="{{ pin }}" onChange="{{ onPin }}" onKeyDown="{{ onPinKey }}" type="password" placeholder="PIN admin" autoFocus="{{ true }}" style="width:100%;margin-top:16px;border:1.5px solid #d7e2ca;background:#FBFCF6;border-radius:14px;padding:15px 16px;letter-spacing:3px;color:#2C3327;outline:none;transition:border-color .2s ease" style-focus="border-color:#7E9B62">
+
+          <button onClick="{{ login }}" style="width:100%;margin-top:11px;border:none;background:{{ simpanBg }};color:#fff;font-family:'Quicksand';font-weight:700;font-size:15.5px;padding:15px;border-radius:14px;cursor:{{ simpanCur }};transition:background .2s ease,transform .15s ease" style-hover="transform:translateY(-1px)">{{ loginLabel }}</button>
+
+          <sc-if value="{{ msg }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:13px 0 0;font-size:13px;line-height:1.55;color:#7ca34f;text-align:center">{{ msg }}</p>
+          </sc-if>
+          <sc-if value="{{ apiKosong }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:14px 0 0;font-size:12.5px;line-height:1.6;color:#778567;background:#FBF3EA;border:1px solid #dce7cf;border-radius:12px;padding:11px 13px">Alamat konektor belum diisi. Buka panel Tweaks dan tempel URL <strong>/exec</strong> milikmu ke kolom Order Api Url.</p>
+          </sc-if>
         </div>
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.86)">{{ statusKoneksi }}</span>
-        <a href="index.html" style="height:38px;display:inline-flex;align-items:center;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-size:13px;font-weight:600" style-hover="background:rgba(255,255,255,.18);text-decoration:none;color:#fff">← Dashboard</a>
-        <button type="button" onClick="{{ refresh }}" style="height:38px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-family:Manrope;font-size:13px;font-weight:600;cursor:pointer">Muat Ulang</button>
-        <span title="{{ sesiEmail }}" style="display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 12px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);max-width:210px">
-          <span style="width:22px;height:22px;flex:0 0 auto;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:9.5px;font-weight:800">{{ sesiInisial }}</span>
-          <span style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ sesiNama }}</span>
-        </span>
-        <button type="button" onClick="{{ keluar }}" title="Keluar dari sesi" style="height:38px;padding:0 13px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-family:Manrope;font-size:13px;font-weight:600;cursor:pointer">Keluar</button>
-        <button type="button" onClick="{{ toggleTheme }}" title="Mode gelap / terang" style="width:38px;height:38px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-size:14px;cursor:pointer">{{ themeIcon }}</button>
-      </div>
     </div>
-    <div style="max-width:1280px;margin:0 auto;padding:0 24px 14px;display:flex;gap:8px;flex-wrap:wrap">
-      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
-        <button type="button" onClick="{{ t.onClick }}" style="height:40px;flex:0 0 auto;padding:0 15px;border-radius:10px;border:1px solid {{ t.border }};background:{{ t.bg }};color:{{ t.color }};font-family:Manrope;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 180ms ease">{{ t.label }}</button>
-      </sc-for>
-    </div>
-  </header>
+  </sc-if>
 
-  <main class="om-pad" style="max-width:1280px;margin:0 auto;padding:20px 24px 28px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
-
-    <section style="flex:1 1 620px;min-width:0;display:flex;flex-direction:column;gap:20px">
-
-      <sc-if value="{{ tabButir }}" hint-placeholder-val="{{ true }}">
-        <div style="animation:fadeUp 280ms ease both">
-          <dc-import name="AdminControls" komponen-options="{{ subOptions }}" values="{{ formButir }}" editing-id="{{ editingId }}" busy="{{ busyButir }}" error="{{ errButir }}" success="{{ okButir }}" mode="{{ mode }}" on-field="{{ onFieldButir }}" on-submit="{{ submitButir }}" on-reset="{{ resetButir }}" on-cancel="{{ cancelEdit }}" hint-size="100%,520px"></dc-import>
-        </div>
-
-        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px;animation:fadeUp 320ms ease both">
-          <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px">
-            <div style="min-width:0">
-              <h2 style="margin:0;font-size:15.5px;font-weight:800;letter-spacing:-.01em">Kelola Tahapan Berkas</h2>
-              <div style="margin-top:2px;font-size:12.5px;color:var(--ink-2);text-wrap:pretty">3 tahap wajib: Verifikasi TU → Keuangan → SP2D. Revisi adalah penanda kondisional, bukan tahap.</div>
-            </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <input type="search" value="{{ cari }}" onInput="{{ onCari }}" placeholder="Cari butir..." style="height:38px;width:180px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:Manrope;font-size:13px;outline:none" style-focus="border-color:var(--navy-3)">
-              <select value="{{ filterKomponen }}" onChange="{{ onFilterKomponen }}" aria-label="Filter subkomponen" style="height:38px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:Manrope;font-size:13px;cursor:pointer;outline:none;max-width:230px">
-                <option value="ALL">Semua subkomponen</option>
-                <sc-for list="{{ subOptions }}" as="k" hint-placeholder-count="5">
-                  <option value="{{ k.value }}">{{ k.label }}</option>
-                </sc-for>
-              </select>
-              <select value="{{ filterStatus }}" onChange="{{ onFilterStatus }}" aria-label="Filter tahapan" style="height:38px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:Manrope;font-size:13px;cursor:pointer;outline:none">
-                <option value="ALL">Semua tahapan</option>
-                <sc-for list="{{ tahapOptions }}" as="s" hint-placeholder-count="4">
-                  <option value="{{ s.value }}">{{ s.label }}</option>
-                </sc-for>
-              </select>
-            </div>
-          </div>
-          <dc-import name="ActivityTable" items="{{ butirTampil }}" editable="{{ true }}" caption="{{ butirCaption }}" empty-text="Belum ada butir yang cocok dengan filter." on-status="{{ ubahStatus }}" on-revisi="{{ tandaiRevisi }}" on-edit="{{ mulaiEdit }}" on-delete="{{ hapusButir }}" hint-size="100%,420px"></dc-import>
-
-          <sc-if value="{{ adaPaging }}" hint-placeholder-val="{{ false }}">
-            <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between">
-              <span style="font-size:12px;color:var(--ink-3)">{{ halamanLabel }}</span>
-              <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
-                <button type="button" onClick="{{ onPrev }}" class="om-tap" style="height:36px;min-width:44px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font-family:Manrope;font-size:13px;font-weight:700;cursor:pointer;opacity:{{ prevDim }}">‹</button>
-                <sc-for list="{{ halamanTabs }}" as="h" hint-placeholder-count="3">
-                  <button type="button" onClick="{{ h.onClick }}" class="om-tap" style="height:36px;min-width:38px;border-radius:9px;border:1px solid {{ h.border }};background:{{ h.bg }};color:{{ h.color }};font-family:Manrope;font-size:13px;font-weight:700;cursor:pointer">{{ h.label }}</button>
-                </sc-for>
-                <button type="button" onClick="{{ onNext }}" class="om-tap" style="height:36px;min-width:44px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font-family:Manrope;font-size:13px;font-weight:700;cursor:pointer;opacity:{{ nextDim }}">›</button>
-              </div>
-            </div>
-          </sc-if>
-        </div>
-      </sc-if>
-
-      <sc-if value="{{ tabPagu }}" hint-placeholder-val="{{ false }}">
-        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;animation:fadeUp 280ms ease both">
-          <div style="padding:18px 20px;border-bottom:1px solid var(--line-2);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
-            <div style="min-width:0">
-              <h2 style="margin:0;font-size:15.5px;font-weight:800;letter-spacing:-.01em">Revisi Pagu Anggaran</h2>
-              <div style="margin-top:3px;font-size:12.5px;color:var(--ink-2);text-wrap:pretty">Ubah nama dan besaran pagu komponen utama maupun subkomponen. Tersimpan ke sheet "Anggaran".</div>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-              <input type="search" value="{{ cariPagu }}" onInput="{{ onCariPagu }}" placeholder="Cari komponen..." style="height:40px;width:180px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:Manrope;font-size:13px;outline:none" style-focus="border-color:var(--navy-3)">
-              <button type="button" onClick="{{ toggleFormKomp }}" title="Tambah komponen atau subkomponen baru" style="height:40px;padding:0 14px;border-radius:10px;border:1px solid {{ tambahBorder }};background:{{ tambahBg }};color:{{ tambahInk }};font-family:Manrope;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap">{{ tambahLabel }}</button>
-            </div>
-          </div>
-          <sc-if value="{{ formKompBuka }}" hint-placeholder-val="{{ false }}">
-            <div style="padding:14px 16px;border-bottom:1px solid var(--line-2);background:var(--surface-2);animation:fadeUp 200ms ease both">
-              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-                <div style="display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--surface-3);border:1px solid var(--line-2);flex:0 0 auto">
-                  <button type="button" onClick="{{ setTipeUtama }}" style="height:34px;padding:0 12px;border-radius:7px;border:none;background:{{ kompTipeUtamaBg }};color:{{ kompTipeUtamaInk }};font-family:Manrope;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Komponen</button>
-                  <button type="button" onClick="{{ setTipeSub }}" style="height:34px;padding:0 12px;border-radius:7px;border:none;background:{{ kompTipeSubBg }};color:{{ kompTipeSubInk }};font-family:Manrope;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Subkomponen</button>
-                </div>
-                <sc-if value="{{ kompTipeSub }}" hint-placeholder-val="{{ true }}">
-                  <select value="{{ formKomp.parent }}" onChange="{{ onKompParent }}" aria-label="Komponen utama induk" style="flex:1 1 190px;min-width:0;height:40px;padding:0 11px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:Manrope;font-size:12.5px;cursor:pointer;outline:none">
-                    <option value="">Induk…</option>
-                    <sc-for list="{{ utamaOptions }}" as="k" hint-placeholder-count="10">
-                      <option value="{{ k.value }}">{{ k.label }}</option>
-                    </sc-for>
-                  </select>
-                </sc-if>
-                <input type="text" value="{{ formKomp.id }}" onInput="{{ onKompId }}" placeholder="Kode" style="flex:1 1 130px;min-width:0;height:40px;padding:0 11px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none" style-focus="border-color:var(--navy-3)">
-                <input type="text" value="{{ formKomp.nama }}" onInput="{{ onKompNama }}" placeholder="Nama kegiatan" style="flex:2 1 180px;min-width:0;height:40px;padding:0 11px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:Manrope;font-size:12.5px;outline:none" style-focus="border-color:var(--navy-3)">
-                <input type="text" inputmode="numeric" value="{{ formKomp.pagu }}" onInput="{{ onKompPagu }}" placeholder="Pagu" style="flex:1 1 130px;min-width:0;height:40px;padding:0 11px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;text-align:right;outline:none" style-focus="border-color:var(--navy-3)">
-                <button type="button" onClick="{{ simpanKomponen }}" disabled="{{ busyKomp }}" style="height:40px;padding:0 16px;flex:0 0 auto;border-radius:9px;border:none;background:var(--navy);color:#fff;font-family:Manrope;font-size:12.5px;font-weight:700;cursor:pointer">{{ labelKomp }}</button>
-              </div>
-            </div>
-          </sc-if>
-          <div style="padding:16px;display:grid;gap:8px;max-height:640px;overflow-y:auto">
-            <sc-for list="{{ barisPagu }}" as="r" hint-placeholder-count="6">
-              <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:{{ r.pad }};border-radius:12px;background:{{ r.bg }};border:1px solid {{ r.borderCol }};border-left:{{ r.leftBar }};margin-left:{{ r.indent }}">
-                <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;background:{{ r.kodeBg }};color:{{ r.kodeInk }};flex:0 0 auto;letter-spacing:.02em">{{ r.id }}</span>
-                <input type="text" value="{{ r.nama }}" onInput="{{ r.onNama }}" aria-label="Nama kegiatan" style="flex:2 1 220px;min-width:0;height:38px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:Manrope;font-size:13px;font-weight:{{ r.weight }};outline:none" style-focus="border-color:var(--navy-3)">
-                <div style="flex:1 1 170px;min-width:0;position:relative">
-                  <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-3)">Rp</span>
-                  <input type="text" inputmode="numeric" value="{{ r.pagu }}" onInput="{{ r.onPagu }}" aria-label="Pagu anggaran" style="width:100%;height:38px;padding:0 11px 0 34px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;text-align:right;outline:none" style-focus="border-color:var(--navy-3)">
-                </div>
-                <div style="display:flex;gap:6px;flex:0 0 auto">
-                  <button type="button" onClick="{{ r.onSimpan }}" disabled="{{ r.diam }}" style="height:42px;padding:0 14px;border-radius:9px;border:none;background:{{ r.btnBg }};color:{{ r.btnInk }};font-family:Manrope;font-size:12.5px;font-weight:700;cursor:{{ r.cursor }}">{{ r.btnLabel }}</button>
-                  <button type="button" onClick="{{ r.onHapus }}" title="Hapus komponen ini" style="height:42px;width:42px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--red);font-family:Manrope;font-size:13px;font-weight:700;cursor:pointer" style-hover="border-color:var(--red);background:var(--red-bg)">✕</button>
-                </div>
-              </div>
-            </sc-for>
-          </div>
-          <sc-if value="{{ adaPesanPagu }}" hint-placeholder-val="{{ false }}">
-            <div style="padding:0 16px 16px">
-              <div role="status" style="padding:12px 14px;border-radius:11px;background:{{ pesanPaguBg }};border:1px solid {{ pesanPaguBorder }};font-size:12.5px;overflow-wrap:anywhere">{{ pesanPagu }}</div>
-            </div>
-          </sc-if>
-        </div>
-      </sc-if>
-
-      <sc-if value="{{ tabRpd }}" hint-placeholder-val="{{ false }}">
-        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;animation:fadeUp 280ms ease both">
-          <div style="padding:18px 20px;border-bottom:1px solid var(--line-2)">
-            <h2 style="margin:0;font-size:15.5px;font-weight:800;letter-spacing:-.01em">Revisi RPD (Rencana Penarikan Dana)</h2>
-            <div style="margin-top:3px;font-size:12.5px;color:var(--ink-2);text-wrap:pretty">Rencana penarikan per bulan untuk tiap komponen utama. Dipakai dashboard sebagai pembanding penyerapan bulanan.</div>
-          </div>
-          <div style="padding:18px;display:grid;gap:16px">
-            <div>
-              <label style="display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px">Komponen Utama</label>
-              <select ref="{{ refRpdKomponen }}" value="{{ rpdKomponen }}" onChange="{{ onRpdKomponen }}" style="width:100%;height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:Manrope;font-size:13px;cursor:pointer;outline:none" style-focus="border-color:var(--navy-3)">
-                <option value="">— Pilih komponen utama —</option>
-                <sc-for list="{{ utamaOptions }}" as="k" hint-placeholder-count="10">
-                  <option value="{{ k.value }}">{{ k.label }}</option>
-                </sc-for>
-              </select>
-            </div>
-
-            <sc-if value="{{ adaRpdPilihan }}" hint-placeholder-val="{{ false }}">
-              <div style="display:grid;gap:14px">
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(122px,1fr));gap:10px">
-                  <sc-for list="{{ rpdBulan }}" as="m" hint-placeholder-count="12">
-                    <div>
-                      <label style="display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:{{ m.labelColor }};margin-bottom:5px">{{ m.label }}</label>
-                      <div style="position:relative">
-                        <button type="button" onClick="{{ m.onKunci }}" title="{{ m.kunciJudul }}" aria-label="{{ m.kunciJudul }}" style="position:absolute;left:5px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:7px;border:none;background:transparent;color:{{ m.kunciInk }};font-size:12px;line-height:1;cursor:pointer;padding:0;opacity:{{ m.kunciOpasitas }}" style-hover="background:var(--line-2)">{{ m.kunciIkon }}</button>
-                        <input type="text" inputmode="numeric" value="{{ m.value }}" onInput="{{ m.onInput }}" readOnly="{{ m.kunci }}" placeholder="0" style="width:100%;height:42px;padding:0 10px 0 38px;border-radius:9px;border:1px solid {{ m.border }};background:{{ m.bg }};color:{{ m.ink }};font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;text-align:right;outline:none" style-focus="border-color:var(--navy-3)">
-                      </div>
-                    </div>
-                  </sc-for>
-                </div>
-
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:13px 15px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line-2)">
-                  <sc-for list="{{ rpdStats }}" as="s" hint-placeholder-count="4">
-                    <div>
-                      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-3)">{{ s.label }}</div>
-                      <div style="margin-top:3px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:{{ s.color }}">{{ s.value }}</div>
-                    </div>
-                  </sc-for>
-                </div>
-
-                <sc-if value="{{ adaPesanRpd }}" hint-placeholder-val="{{ false }}">
-                  <div role="status" style="padding:12px 14px;border-radius:11px;background:{{ pesanRpdBg }};border:1px solid {{ pesanRpdBorder }};font-size:12.5px;overflow-wrap:anywhere">{{ pesanRpd }}</div>
-                </sc-if>
-
-                <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
-                  <button type="button" onClick="{{ simpanRpd }}" disabled="{{ busyRpd }}" style="height:44px;padding:0 20px;border-radius:11px;border:none;background:var(--navy);color:#fff;font-family:Manrope;font-size:13.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:9px;opacity:{{ busyRpdOpacity }}">
-                    <sc-if value="{{ busyRpd }}" hint-placeholder-val="{{ false }}">
-                      <span style="width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin 700ms linear infinite;display:inline-block"></span>
-                    </sc-if>
-                    <span>{{ labelSimpanRpd }}</span>
-                  </button>
-                  <button type="button" onClick="{{ resetRpd }}" style="height:44px;padding:0 16px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:Manrope;font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:var(--navy-3)">Kembalikan</button>
-                  <span style="font-size:11.5px;color:var(--ink-3);text-wrap:pretty">Tersimpan ke sheet "RPD" — dashboard langsung memakai angka baru.</span>
-                </div>
-              </div>
+  <sc-if value="{{ masuk }}" hint-placeholder-val="{{ false }}">
+    <div style="position:sticky;top:0;z-index:40;background:rgba(244,237,230,.94);backdrop-filter:blur(10px);border-bottom:1px solid #d7e2ca">
+      <div class="hbar" style="max-width:1180px;margin:0 auto;padding:11px 18px 0">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">
+            <sc-if value="{{ adaKembali }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ kembali }}" aria-label="Kembali" style="display:flex;align-items:center;justify-content:center;border:1px solid #cedbc0;background:#fff;color:#5A664D;width:38px;height:38px;border-radius:12px;cursor:pointer;flex-shrink:0">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+              </button>
             </sc-if>
+            <sc-if value="{{ adaLogo }}" hint-placeholder-val="{{ true }}">
+              <span style="width:36px;height:36px;border-radius:11px;background:#55763F;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5V8a5.5 5.5 0 0 1 11 0v2.5"></path><rect x="4.5" y="10.5" width="15" height="9.5" rx="2.6"></rect></svg>
+              </span>
+            </sc-if>
+            <div style="min-width:0">
+              <p class="htoko" style="margin:0;font-family:'Quicksand';font-weight:700;font-size:15.5px;letter-spacing:-.1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ judulLayar }}</p>
+              <p style="margin:1px 0 0;font-size:11.5px;color:#7F8B72;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ subJudul }}</p>
+            </div>
+          </div>
+          <div style="display:flex;gap:7px;flex-shrink:0">
+            <button onClick="{{ muat }}" aria-label="Muat ulang" style="display:flex;align-items:center;gap:7px;border:1px solid #cedbc0;background:#fff;color:#5A664D;font-family:'Quicksand';font-weight:700;font-size:13px;height:38px;padding:0 13px;border-radius:999px;cursor:pointer;transition:background .2s ease" style-hover="background:#FBF3EA">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 1 1-2.6-5.4"></path><path d="M20 4.5v5h-5"></path></svg>
+              <span class="only-desk">Muat ulang</span>
+            </button>
+            <button onClick="{{ keluar }}" aria-label="Keluar" style="display:flex;align-items:center;gap:7px;border:1px solid #cedbc0;background:#fff;color:#55763F;font-family:'Quicksand';font-weight:700;font-size:13px;height:38px;padding:0 13px;border-radius:999px;cursor:pointer;transition:background .2s ease" style-hover="background:#FBF3EA">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4.5h3.2A1.8 1.8 0 0 1 19.5 6.3v11.4a1.8 1.8 0 0 1-1.8 1.8h-3.2"></path><path d="M10 8l-4 4 4 4M6 12h9"></path></svg>
+              <span class="only-desk">Keluar</span>
+            </button>
           </div>
         </div>
-      </sc-if>
-    </section>
 
-    <section style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:20px">
-      <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px">
-        <h2 style="margin:0 0 4px;font-size:15px;font-weight:800;letter-spacing:-.01em">Ringkasan</h2>
-        <div style="font-size:12px;color:var(--ink-2);margin-bottom:13px">Sumber: {{ sourceLabel }}</div>
-        <div style="display:grid;gap:9px">
-          <sc-for list="{{ summary }}" as="s" hint-placeholder-count="5">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 12px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line-2)">
-              <span style="font-size:12.5px;color:var(--ink-2)">{{ s.label }}</span>
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:{{ s.color }}">{{ s.value }}</span>
+        <sc-if value="{{ tampilTabs }}" hint-placeholder-val="{{ true }}">
+          <div class="tabs" style="display:flex;gap:7px;margin-top:11px;padding-bottom:11px;overflow-x:auto;scrollbar-width:none">
+            <sc-for list="{{ menu }}" as="m" hint-placeholder-count="4">
+              <button onClick="{{ m.pilih }}" style="flex-shrink:0;display:flex;align-items:center;gap:7px;border:1px solid {{ m.br }};background:{{ m.bg }};color:{{ m.fg }};font-family:'Quicksand';font-weight:700;font-size:13.5px;height:38px;padding:0 15px;border-radius:999px;cursor:pointer;transition:background .2s ease,color .2s ease">
+                {{ m.label }}
+                <sc-if value="{{ m.jml }}" hint-placeholder-val="{{ false }}">
+                  <span style="background:rgba(255,255,255,.22);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px">{{ m.jml }}</span>
+                </sc-if>
+              </button>
+            </sc-for>
+            <button onClick="{{ bukaSetting }}" style="flex-shrink:0;display:flex;align-items:center;gap:7px;border:1px solid #cedbc0;background:#fff;color:#5A664D;font-family:'Quicksand';font-weight:700;font-size:13.5px;height:38px;padding:0 15px;border-radius:999px;cursor:pointer;transition:background .2s ease" style-hover="background:#FBF3EA">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"></circle><path d="M19.4 14.5a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5v.2a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1h-.2a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5v-.2a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"></path></svg>
+              Pengaturan
+            </button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ tanpaTabs }}" hint-placeholder-val="{{ false }}">
+          <div style="height:11px"></div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div class="wrap" style="max-width:1180px;margin:0 auto;padding:16px 18px 48px">
+
+      <sc-if value="{{ msg }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;background:{{ msgBg }};border:1px solid {{ msgBr }};border-radius:14px;padding:12px 15px;animation:fadeUp .25s ease both">
+          <span style="font-size:13.5px;line-height:1.55;color:{{ msgFg }};flex:1;word-break:break-word">{{ msg }}</span>
+          <button onClick="{{ tutupMsg }}" aria-label="Tutup" style="border:none;background:transparent;color:{{ msgFg }};cursor:pointer;font-size:17px;line-height:1;padding:0 2px;opacity:.6">×</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ modeSetting }}" hint-placeholder-val="{{ false }}">
+        <div class="setwrap" style="animation:fadeUp .28s ease both">
+          <sc-for list="{{ grupSetting }}" as="grp" hint-placeholder-count="2">
+            <div style="margin-bottom:18px">
+              <p style="margin:0 4px 8px;font-family:'Quicksand';font-weight:700;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:#8d9a7e">{{ grp.judul }}</p>
+              <div style="background:#fff;border:1px solid #d7e2ca;border-radius:18px;overflow:hidden;box-shadow:0 8px 22px rgba(61,44,37,.05)">
+                <sc-for list="{{ grp.baris }}" as="it" hint-placeholder-count="3">
+                  <button onClick="{{ it.buka }}" class="setrow" style="width:100%;text-align:left;display:flex;align-items:center;gap:13px;border:none;border-top:1px solid {{ it.garis }};background:transparent;padding:14px 16px;cursor:pointer;min-height:62px;transition:background .18s ease" style-hover="background:#FDF7F1">
+                    <span style="width:34px;height:34px;border-radius:11px;background:{{ it.bg }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="{{ it.fg }}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="{{ it.d1 }}"></path>
+                        <path d="{{ it.d2 }}"></path>
+                      </svg>
+                    </span>
+                    <span style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1">
+                      <span style="font-family:'Quicksand';font-weight:700;font-size:14.5px;color:#2C3327">{{ it.label }}</span>
+                      <span style="font-size:11.5px;line-height:1.45;color:#7F8B72">{{ it.desc }}</span>
+                    </span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b1bea2" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M9 5l7 7-7 7"></path></svg>
+                  </button>
+                </sc-for>
+              </div>
             </div>
           </sc-for>
-        </div>
-      </div>
 
-      <sc-if value="{{ adaDraf }}" hint-placeholder-val="{{ false }}">
-        <div style="padding:13px 15px;border-radius:14px;background:var(--amber-bg);border:1px solid var(--amber);display:flex;gap:10px;align-items:flex-start">
-          <span style="font-size:14px;line-height:1.3;flex:0 0 auto">🔒</span>
-          <span style="min-width:0;font-size:12px;line-height:1.55;color:var(--ink-2);text-wrap:pretty"><strong style="color:var(--amber)">Pembaruan otomatis dijeda.</strong> Ada isian yang belum disimpan — data di layar tidak akan tertimpa sampai Anda menyimpan atau membersihkan isian.</span>
+          <p style="margin:0 4px;font-size:11.5px;line-height:1.6;color:#89967a">Perubahan di sini langsung tertulis ke spreadsheet. Untuk pengaturan sistem, ubah kolom <strong>nilai</strong> saja — kolom kunci jangan disentuh.</p>
         </div>
       </sc-if>
 
-      <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden">
-        <button type="button" onClick="{{ bukaRiwayat }}" style="display:flex;width:100%;gap:10px;align-items:center;padding:16px 18px;background:transparent;border:none;cursor:pointer;text-align:left;font-family:Manrope" style-hover="background:var(--surface-2)">
-          <span style="flex:1;min-width:0;font-size:15px;font-weight:800;letter-spacing:-.01em;color:var(--ink)">Riwayat Perubahan</span>
-          <span style="font-size:12px;color:var(--ink-3)">{{ riwayatIkon }}</span>
-        </button>
-        <sc-if value="{{ riwayatBuka }}" hint-placeholder-val="{{ false }}">
-          <div style="padding:0 18px 16px">
-            <sc-if value="{{ riwayatMuat }}" hint-placeholder-val="{{ false }}">
-              <div style="padding:16px 0;font-size:12.5px;color:var(--ink-3)">Memuat riwayat…</div>
+      <sc-if value="{{ modeData }}" hint-placeholder-val="{{ true }}">
+        <div class="shell {{ shellMode }}">
+
+          <div class="side card" style="position:sticky;top:112px;background:#fff;border:1px solid #d7e2ca;border-radius:20px;padding:16px;box-shadow:0 10px 26px rgba(61,44,37,.06)">
+            <div style="position:relative">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a5b394" stroke-width="2.1" stroke-linecap="round" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4 4"></path></svg>
+              <input value="{{ cari }}" onChange="{{ onCari }}" placeholder="Cari…" style="width:100%;border:1.5px solid #e2ead8;background:#FBFCF6;border-radius:13px;padding:12px 13px 12px 38px;font-size:14.5px;color:#2C3327;outline:none;transition:border-color .2s ease" style-focus="border-color:#7E9B62">
+            </div>
+
+            <button onClick="{{ baru }}" style="width:100%;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px dashed #c2d2b0;background:#FDF6EF;color:#55763F;font-family:'Quicksand';font-weight:700;font-size:14px;padding:13px;border-radius:13px;cursor:pointer;transition:background .2s ease" style-hover="background:#F8EADD">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5.5v13M5.5 12h13"></path></svg>
+              Tambah baru
+            </button>
+
+            <p style="margin:14px 2px 9px;font-size:12px;color:#7F8B72">{{ ringkas }}</p>
+
+            <sc-if value="{{ bisaUrut }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0 2px 9px;display:flex;align-items:center;gap:7px;font-size:11.5px;color:#778567;line-height:1.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#93a87c" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><path d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01"></path></svg>
+                {{ petunjukUrut }}
+              </p>
             </sc-if>
-            <sc-if value="{{ riwayatKosong }}" hint-placeholder-val="{{ false }}">
-              <div style="padding:14px;border-radius:11px;background:var(--surface-2);border:1px dashed var(--line);font-size:12px;line-height:1.55;color:var(--ink-2);text-wrap:pretty">Belum ada catatan. Riwayat tersimpan di sheet <strong>Log</strong> dan hanya tersedia saat terhubung ke Google Sheets.</div>
+
+            <div class="rows" onPointerMove="{{ saatGeser }}" onPointerUp="{{ selesaiGeser }}" onPointerCancel="{{ selesaiGeser }}" style="display:flex;flex-direction:column;gap:7px;max-height:58vh;overflow-y:auto;padding-right:2px;touch-action:pan-y">
+              <sc-for list="{{ daftar }}" as="r" hint-placeholder-count="5">
+                <div data-ri="{{ r.ri }}" style="display:flex;align-items:stretch;gap:6px;opacity:{{ r.dragOp }};box-shadow:{{ r.dragSh }};border-radius:14px">
+                  <button class="row-open" onClick="{{ r.buka }}" style="flex:1;min-width:0;text-align:left;display:flex;align-items:center;gap:11px;border:1px solid {{ r.br }};background:{{ r.bg }};border-radius:14px;padding:11px 12px;cursor:pointer;min-height:56px;transition:background .18s ease,border-color .18s ease" style-hover="background:#FDF7F1">
+                  <span style="width:38px;height:38px;border-radius:11px;background:{{ r.thumbBg }};flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Quicksand';font-weight:700;font-size:14px;color:#55763F">
+                    <img ref="{{ r.imgRef }}" alt="" style="width:100%;height:100%;object-fit:cover;display:{{ r.imgShow }}">
+                    <span style="display:{{ r.inisialShow }}">{{ r.inisial }}</span>
+                  </span>
+                  <span style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1">
+                    <span style="font-family:'Quicksand';font-weight:700;font-size:14px;color:#2C3327;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.judul }}</span>
+                    <span style="font-size:11.5px;color:#778567;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.sub }}</span>
+                  </span>
+                  <sc-if value="{{ r.tag }}" hint-placeholder-val="{{ false }}">
+                    <span style="flex-shrink:0;background:{{ r.tagBg }};color:{{ r.tagFg }};font-family:'Quicksand';font-weight:700;font-size:10.5px;letter-spacing:.3px;padding:4px 9px;border-radius:999px">{{ r.tag }}</span>
+                  </sc-if>
+                  </button>
+                  <span onPointerDown="{{ r.onGeser }}" role="button" aria-label="Geser untuk mengurutkan" style="display:{{ r.handleShow }};flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:34px;border:1px solid #e2ead8;background:#FDF7F1;border-radius:12px;cursor:grab;touch-action:none">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#55763F" stroke-width="2.2" stroke-linecap="round"><path d="M9 6h.01M9 12h.01M9 18h.01M15 6h.01M15 12h.01M15 18h.01"></path></svg>
+                  </span>
+                  <span style="display:{{ r.handleShow }};flex-direction:column;gap:3px;flex-shrink:0">
+                    <button class="row-up" onClick="{{ r.naik }}" aria-label="Naikkan" style="flex:1;min-height:25px;width:30px;border:1px solid #e2ead8;background:#fff;border-radius:9px 9px 4px 4px;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:#F3F7E9">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#778567" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"></path></svg>
+                    </button>
+                    <button class="row-down" onClick="{{ r.turun }}" aria-label="Turunkan" style="flex:1;min-height:25px;width:30px;border:1px solid #e2ead8;background:#fff;border-radius:4px 4px 9px 9px;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:#F3F7E9">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#778567" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+                    </button>
+                  </span>
+                </div>
+              </sc-for>
+
+              <sc-if value="{{ adaLagi }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ muatLagi }}" style="margin-top:4px;border:1px dashed #cddbbc;background:#FBFCF6;color:#55763F;font-family:'Quicksand';font-weight:700;font-size:12.5px;padding:12px;border-radius:13px;cursor:pointer;transition:background .18s ease" style-hover="background:#F3F7E9">{{ muatLagiLabel }}</button>
+              </sc-if>
+            </div>
+          </div>
+
+          <div class="main card" style="background:#fff;border:1px solid #d7e2ca;border-radius:20px;padding:22px;box-shadow:0 10px 26px rgba(61,44,37,.06);min-height:200px;animation:slideIn .28s ease both">
+            <sc-if value="{{ adaDraft }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                  <button onClick="{{ batal }}" class="only-hp" aria-label="Kembali ke daftar" style="align-items:center;justify-content:center;border:1px solid #d7e2ca;background:#FBFCF6;color:#5A664D;width:38px;height:38px;border-radius:11px;cursor:pointer;flex-shrink:0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+                  </button>
+                  <p style="margin:0;font-family:'Quicksand';font-weight:700;font-size:16.5px">{{ judulDraft }}</p>
+                </div>
+                <sc-if value="{{ bisaHapus }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ hapus }}" style="display:flex;align-items:center;gap:6px;border:1px solid #deead1;background:#f9fbf3;color:#7ca34f;font-family:'Quicksand';font-weight:700;font-size:12.5px;height:38px;padding:0 14px;border-radius:999px;cursor:pointer;transition:background .2s ease" style-hover="background:#f0f5e3">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M9.5 7V5.4A1.4 1.4 0 0 1 10.9 4h2.2a1.4 1.4 0 0 1 1.4 1.4V7M7 7l.8 11.2A1.6 1.6 0 0 0 9.4 19.7h5.2a1.6 1.6 0 0 0 1.6-1.5L17 7"></path></svg>
+                    Hapus
+                  </button>
+                </sc-if>
+              </div>
+
+              <div class="fgrid" style="margin-top:18px">
+                <sc-for list="{{ fields }}" as="f" hint-placeholder-count="0">
+                  <label class="{{ f.kelas }}" style="display:flex;flex-direction:column;gap:7px">
+                    <span style="font-family:'Quicksand';font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;color:#7F8B72">{{ f.label }}</span>
+
+                    <sc-if value="{{ f.isArea }}" hint-placeholder-val="{{ false }}">
+                      <textarea value="{{ f.val }}" onChange="{{ f.set }}" rows="3" style="width:100%;border:1.5px solid #e2ead8;background:#FBFCF6;border-radius:13px;padding:12px 14px;font-size:15px;line-height:1.55;color:#2C3327;outline:none;resize:vertical;transition:border-color .2s ease" style-focus="border-color:#7E9B62"></textarea>
+                    </sc-if>
+
+                    <sc-if value="{{ f.isBool }}" hint-placeholder-val="{{ false }}">
+                      <span style="display:flex;gap:8px">
+                        <button onClick="{{ f.setYa }}" style="flex:1;border:1.5px solid {{ f.yaBr }};background:{{ f.yaBg }};color:{{ f.yaFg }};font-family:'Quicksand';font-weight:700;font-size:14px;min-height:46px;border-radius:12px;cursor:pointer;transition:background .2s ease">Ya</button>
+                        <button onClick="{{ f.setTidak }}" style="flex:1;border:1.5px solid {{ f.tdBr }};background:{{ f.tdBg }};color:{{ f.tdFg }};font-family:'Quicksand';font-weight:700;font-size:14px;min-height:46px;border-radius:12px;cursor:pointer;transition:background .2s ease">Tidak</button>
+                      </span>
+                    </sc-if>
+
+                    <sc-if value="{{ f.isPlain }}" hint-placeholder-val="{{ true }}">
+                      <input value="{{ f.val }}" onChange="{{ f.set }}" inputmode="{{ f.mode }}" placeholder="{{ f.ph }}" style="width:100%;border:1.5px solid #e2ead8;background:#FBFCF6;border-radius:13px;padding:13px 14px;font-size:15px;color:#2C3327;outline:none;transition:border-color .2s ease" style-focus="border-color:#7E9B62">
+                    </sc-if>
+
+                    <sc-if value="{{ f.hint }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:11.5px;line-height:1.5;color:#89967a">{{ f.hint }}</span>
+                    </sc-if>
+                    <sc-if value="{{ f.pratinjau }}" hint-placeholder-val="{{ false }}">
+                      <img ref="{{ f.imgRef }}" alt="" style="margin-top:2px;width:104px;height:104px;object-fit:cover;border-radius:14px;border:1px solid #e2ead8;background:#F1F5E7">
+                    </sc-if>
+                  </label>
+                </sc-for>
+              </div>
+
+              <div class="actions" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid #e5eedb">
+                <button onClick="{{ simpan }}" disabled="{{ sibuk }}" style="flex:1;min-width:140px;border:none;background:{{ simpanBg }};color:#fff;font-family:'Quicksand';font-weight:700;font-size:15px;min-height:50px;padding:0 20px;border-radius:14px;cursor:{{ simpanCur }};transition:background .2s ease">{{ simpanLabel }}</button>
+                <button onClick="{{ batal }}" style="border:1px solid #cedbc0;background:#fff;color:#5A664D;font-family:'Quicksand';font-weight:700;font-size:14.5px;min-height:50px;padding:0 20px;border-radius:14px;cursor:pointer;transition:background .2s ease" style-hover="background:#FBF3EA">Batal</button>
+              </div>
             </sc-if>
-            <div style="display:grid;gap:7px;max-height:320px;overflow-y:auto">
-              <sc-for list="{{ riwayat }}" as="r" hint-placeholder-count="5">
-                <div style="padding:9px 11px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line-2)">
-                  <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">
-                    <span style="font-size:10.5px;font-weight:800;letter-spacing:.04em;color:{{ r.warna }}">{{ r.aksi }}</span>
-                    <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-3)">{{ r.waktu }}</span>
+
+            <sc-if value="{{ kosongDraft }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:58px 20px;gap:11px">
+                <span style="width:56px;height:56px;border-radius:50%;background:#F3F7E9;display:flex;align-items:center;justify-content:center">
+                  <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#7E9B62" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"></path></svg>
+                </span>
+                <p style="margin:0;font-family:'Quicksand';font-weight:700;font-size:16px;color:#465239">{{ kosongJudul }}</p>
+                <p style="margin:0;font-size:13.5px;line-height:1.6;color:#778567;max-width:330px">{{ kosongPesan }}</p>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ modeStat }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card" style="background:#fff;border:1px solid #d7e2ca;border-radius:20px;padding:18px;box-shadow:0 10px 26px rgba(61,44,37,.06);min-width:0">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px">
+              <div style="min-width:0">
+                <p style="font-family:'Quicksand';font-weight:700;font-size:15px;color:#2C3327">Ringkasan toko</p>
+                <p style="margin-top:3px;font-size:11.5px;color:#7F8B72">Dihitung dari tab Statistik &amp; Pesanan</p>
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <sc-for list="{{ statRentang }}" as="p" hint-placeholder-count="3">
+                  <button onClick="{{ p.pilih }}" style="border:1px solid {{ p.br }};background:{{ p.bg }};color:{{ p.fg }};font-family:'Quicksand';font-weight:700;font-size:12.5px;padding:8px 13px;border-radius:999px;cursor:pointer;min-height:36px">{{ p.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <sc-if value="{{ statSibuk }}" hint-placeholder-val="{{ true }}">
+              <p style="margin-top:16px;font-size:13px;color:#778567">Memuat data…</p>
+            </sc-if>
+
+            <sc-if value="{{ statKosong }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:16px;background:#FBF3EA;border:1px solid #dce7cf;border-radius:15px;padding:15px 16px">
+                <p style="font-family:'Quicksand';font-weight:700;font-size:13.5px;color:#657553">{{ statKosongJudul }}</p>
+                <p style="margin-top:6px;font-size:12.5px;line-height:1.6;color:#6B7760">{{ statKosongPesan }}</p>
+                <button onClick="{{ statMuatUlang }}" style="margin-top:12px;border:1px solid #cedbc0;background:#fff;color:#55763F;font-family:'Quicksand';font-weight:700;font-size:12.5px;padding:10px 18px;border-radius:999px;cursor:pointer;min-height:40px" style-hover="background:#F3F7E9">Muat ulang</button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ statMati }}" hint-placeholder-val="{{ false }}">
+              <p style="margin-top:14px;background:#FBF3EA;border:1px solid #dce7cf;border-radius:12px;padding:11px 13px;font-size:12.5px;line-height:1.55;color:#6B7760">Pencatatan statistik sedang nonaktif. Isi <strong>STATISTIK_AKTIF</strong> = ya di Pengaturan → Pengaturan sistem.</p>
+            </sc-if>
+
+            <sc-if value="{{ statAda }}" hint-placeholder-val="{{ false }}">
+              <div class="statgrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
+                <sc-for list="{{ statKartu }}" as="k" hint-placeholder-count="6">
+                  <div style="background:{{ k.bg }};border-radius:15px;padding:13px 14px;min-width:0">
+                    <p style="font-family:'Quicksand';font-weight:700;font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:{{ k.fg }}">{{ k.label }}</p>
+                    <p style="margin-top:5px;font-family:'Quicksand';font-weight:700;font-size:24px;line-height:1.1;color:#2C3327">{{ k.nilai }}</p>
+                    <p style="margin-top:3px;font-size:11px;line-height:1.4;color:#778567">{{ k.sub }}</p>
                   </div>
-                  <div style="margin-top:2px;font-size:11.5px;line-height:1.5;color:var(--ink-2);overflow-wrap:anywhere">{{ r.detail }}</div>
-                  <div style="margin-top:1px;font-size:10.5px;color:var(--ink-3);overflow-wrap:anywhere">{{ r.pengguna }}</div>
+                </sc-for>
+              </div>
+
+              <div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;margin-top:14px;padding-top:14px;border-top:1px dashed #E5EDD6">
+                <span style="font-size:13px;color:#6B7760">Nilai pesanan masuk</span>
+                <span style="font-family:'Quicksand';font-weight:700;font-size:20px;color:#2C3327">{{ statNilai }}</span>
+              </div>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ statTrenAda }}" hint-placeholder-val="{{ false }}">
+            <div class="card" style="background:#fff;border:1px solid #d7e2ca;border-radius:20px;padding:18px;box-shadow:0 10px 26px rgba(61,44,37,.06);min-width:0">
+              <p style="font-family:'Quicksand';font-weight:700;font-size:14px;color:#2C3327">Kunjungan 14 hari terakhir</p>
+              <div style="display:flex;align-items:flex-end;gap:5px;height:104px;margin-top:14px">
+                <sc-for list="{{ statTren }}" as="b" hint-placeholder-count="7">
+                  <div title="{{ b.judul }}" style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;height:100%;gap:5px">
+                    <div style="height:{{ b.tinggi }};background:linear-gradient(180deg,#7E9B62,#55763F);border-radius:6px 6px 3px 3px;transition:height .4s cubic-bezier(.22,.68,.35,1)"></div>
+                    <span style="font-size:9.5px;text-align:center;color:#8d9a7e">{{ b.hari }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ statProdukAda }}" hint-placeholder-val="{{ false }}">
+            <div class="card" style="background:#fff;border:1px solid #d7e2ca;border-radius:20px;padding:18px;box-shadow:0 10px 26px rgba(61,44,37,.06);min-width:0">
+              <p style="font-family:'Quicksand';font-weight:700;font-size:14px;color:#2C3327">Paling banyak dilihat</p>
+              <p style="margin-top:3px;font-size:11.5px;line-height:1.5;color:#7F8B72">Yang sering dilihat tapi jarang dibeli — kandidat pertama untuk diperbaiki foto, harga, atau deskripsinya.</p>
+              <div style="display:flex;flex-direction:column;gap:9px;margin-top:14px">
+                <sc-for list="{{ statProduk }}" as="p" hint-placeholder-count="5">
+                  <div style="min-width:0">
+                    <div style="display:flex;align-items:baseline;gap:8px">
+                      <span style="font-family:'Quicksand';font-weight:700;font-size:11.5px;color:#b1bea2;flex-shrink:0">{{ p.no }}</span>
+                      <span style="flex:1;min-width:0;font-size:13px;color:#2C3327;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.nama }}</span>
+                      <span style="flex-shrink:0;font-family:'Quicksand';font-weight:700;font-size:12px;color:#55763F">{{ p.jml }}</span>
+                    </div>
+                    <div style="margin-top:5px;height:6px;background:#F1F5E7;border-radius:99px;overflow:hidden">
+                      <div style="height:100%;width:{{ p.lebar }};background:#7E9B62;border-radius:99px;transition:width .5s cubic-bezier(.22,.68,.35,1)"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ modeInvoice }}" hint-placeholder-val="{{ false }}">
+        <div class="invcols">
+          <div class="card" style="background:#fff;border:1px solid #d7e2ca;border-radius:20px;padding:22px;box-shadow:0 10px 26px rgba(61,44,37,.06)">
+            <p style="margin:0;font-family:'Quicksand';font-weight:700;font-size:16.5px">Data pelanggan</p>
+            <p style="margin:7px 0 0;font-size:13px;line-height:1.6;color:#778567">Tagihan dikirim ke email ini oleh Mayar, dan pesanannya otomatis masuk ke tab Pesanan seperti order biasa.</p>
+
+            <div class="fgrid" style="margin-top:17px">
+              <label style="display:flex;flex-direction:column;gap:7px">
+                <span style="font-family:'Quicksand';font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;color:#7F8B72">Nama pelanggan</span>
+                <input value="{{ invNama }}" onChange="{{ setInvNama }}" placeholder="Nama lengkap" style="border:1.5px solid #e2ead8;background:#FBFCF6;border-radius:13px;padding:13px 14px;font-size:15px;outline:none;transition:border-color .2s ease" style-focus="border-color:#7E9B62">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:7px">
+                <span style="font-family:'Quicksand';font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;color:#7F8B72">Email</span>
+                <input value="{{ invEmail }}" onChange="{{ setInvEmail }}" inputmode="email" placeholder="nama@email.com" style="border:1.5px solid #e2ead8;background:#FBFCF6;border-radius:13px;padding:13px 14px;font-size:15px;outline:none;transition:border-color .2s ease" style-focus="border-color:#7E9B62">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:7px">
+                <span style="font-family:'Quicksand';font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;color:#7F8B72">No. HP / WhatsApp</span>
+                <input value="{{ invHp }}" onChange="{{ setInvHp }}" inputmode="tel" placeholder="0812…" style="border:1.5px solid #e2ead8;background:#FBFCF6;border-radius:13px;padding:13px 14px;font-size:15px;outline:none;transition:border-color .2s ease" style-focus="border-color:#7E9B62">
+              </label>
+              <label class="wide" style="display:flex;flex-direction:column;gap:7px">
+                <span style="font-family:'Quicksand';font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;color:#7F8B72">Alamat kirim (opsional)</span>
+                <textarea value="{{ invAlamat }}" onChange="{{ setInvAlamat }}" rows="3" placeholder="Jalan, kelurahan, kecamatan, kota, kode pos" style="border:1.5px solid #e2ead8;background:#FBFCF6;border-radius:13px;padding:12px 14px;font-size:15px;line-height:1.55;outline:none;resize:vertical;transition:border-color .2s ease" style-focus="border-color:#7E9B62"></textarea>
+              </label>
+            </div>
+          </div>
+
+          <div class="card" style="background:#fff;border:1px solid #d7e2ca;border-radius:20px;padding:22px;box-shadow:0 10px 26px rgba(61,44,37,.06)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <p style="margin:0;font-family:'Quicksand';font-weight:700;font-size:16.5px">Rincian tagihan</p>
+              <button onClick="{{ invTambah }}" style="display:flex;align-items:center;gap:6px;border:1.5px dashed #c2d2b0;background:#FDF6EF;color:#55763F;font-family:'Quicksand';font-weight:700;font-size:13px;height:40px;padding:0 15px;border-radius:999px;cursor:pointer;transition:background .2s ease" style-hover="background:#F8EADD">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5.5v13M5.5 12h13"></path></svg>
+                Item
+              </button>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
+              <sc-for list="{{ invItems }}" as="it" hint-placeholder-count="1">
+                <div class="irow" style="background:#FBFCF6;border:1px solid #e5eedb;border-radius:15px;padding:11px">
+                  <input class="i-nama" value="{{ it.name }}" onChange="{{ it.setName }}" placeholder="Nama barang / jasa" style="border:1.5px solid #e2ead8;background:#fff;border-radius:11px;padding:12px;font-size:14.5px;outline:none;min-width:0;transition:border-color .2s ease" style-focus="border-color:#7E9B62">
+                  <input class="i-qty" value="{{ it.qty }}" onChange="{{ it.setQty }}" inputmode="numeric" placeholder="Qty" style="border:1.5px solid #e2ead8;background:#fff;border-radius:11px;padding:12px 6px;font-size:14.5px;text-align:center;outline:none;min-width:0;transition:border-color .2s ease" style-focus="border-color:#7E9B62">
+                  <input class="i-harga" value="{{ it.price }}" onChange="{{ it.setPrice }}" inputmode="numeric" placeholder="Harga satuan" style="border:1.5px solid #e2ead8;background:#fff;border-radius:11px;padding:12px;font-size:14.5px;outline:none;min-width:0;transition:border-color .2s ease" style-focus="border-color:#7E9B62">
+                  <button class="i-hapus" onClick="{{ it.hapus }}" aria-label="Hapus item" style="border:1px solid #deead1;background:#f9fbf3;color:#7ca34f;border-radius:11px;min-height:44px;cursor:pointer;display:flex;align-items:center;justify-content:center">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"></path></svg>
+                  </button>
                 </div>
               </sc-for>
             </div>
-          </div>
-        </sc-if>
-      </div>
 
-      <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px">
-        <h2 style="margin:0 0 12px;font-size:15px;font-weight:800;letter-spacing:-.01em">Antrian Berkas per Tahapan</h2>
-        <div style="display:grid;gap:9px">
-          <sc-for list="{{ antrian }}" as="a" hint-placeholder-count="4">
-            <button type="button" onClick="{{ a.onClick }}" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border-radius:11px;background:{{ a.bg }};border:1px solid {{ a.color }};cursor:pointer;font-family:Manrope" style-hover="transform:translateX(2px)">
-              <span style="width:18px;height:18px;flex:0 0 auto;border-radius:6px;background:{{ a.color }};color:#fff;display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:700">{{ a.urut }}</span>
-              <span style="flex:1;font-size:12.5px;font-weight:700;color:{{ a.color }};min-width:0">{{ a.label }}</span>
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:{{ a.color }}">{{ a.jumlah }}</span>
-            </button>
-          </sc-for>
-        </div>
-        <div style="margin-top:12px;font-size:11.5px;line-height:1.6;color:var(--ink-3);text-wrap:pretty">Klik salah satu tahapan untuk memfilter tabel di sebelah kiri.</div>
-      </div>
-
-      <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px">
-        <h2 style="margin:0 0 10px;font-size:15px;font-weight:800;letter-spacing:-.01em">Alur Kerja (SOP)</h2>
-        <div style="display:grid;gap:9px">
-          <sc-for list="{{ sop }}" as="s" hint-placeholder-count="5">
-            <div style="display:flex;gap:10px;align-items:flex-start">
-              <span style="width:20px;height:20px;flex:0 0 auto;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:10.5px">{{ s.n }}</span>
-              <span style="font-size:12.5px;line-height:1.55;color:var(--ink-2);min-width:0;overflow-wrap:anywhere;text-wrap:pretty">{{ s.text }}</span>
+            <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+              <span style="font-family:'Quicksand';font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;color:#7F8B72">Cara bayar</span>
+              <div style="display:flex;flex-wrap:wrap;gap:8px">
+                <sc-for list="{{ invModes }}" as="m" hint-placeholder-count="2">
+                  <button onClick="{{ m.pick }}" style="flex:1 1 150px;min-height:46px;border:1.5px solid {{ m.border }};background:{{ m.bg }};color:{{ m.color }};font-family:'Quicksand';font-weight:700;font-size:13px;padding:10px 14px;border-radius:13px;cursor:pointer;text-align:left;line-height:1.35">
+                    {{ m.label }}
+                    <span style="display:block;font-weight:600;font-size:11px;opacity:.75;margin-top:2px">{{ m.desc }}</span>
+                  </button>
+                </sc-for>
+              </div>
             </div>
-          </sc-for>
+
+            <sc-if value="{{ invManual }}" hint-placeholder-val="{{ false }}">
+              <label style="display:flex;flex-direction:column;gap:7px;margin-top:14px">
+                <span style="font-family:'Quicksand';font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;color:#7F8B72">Keterangan pembayaran</span>
+                <input value="{{ invCaraBayar }}" onChange="{{ setInvCaraBayar }}" placeholder="mis. Transfer BCA 1234567890 a/n Machel" style="border:1.5px solid #e2ead8;background:#FBFCF6;border-radius:12px;padding:12px 13px;font-family:'DM Sans';font-size:14.5px;color:#2C3327;outline:none;min-width:0">
+              </label>
+            </sc-if>
+
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+              <span style="font-family:'Quicksand';font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;color:#7F8B72">Cek ongkir (opsional)</span>
+              <input value="{{ invKotaQ }}" onChange="{{ setInvKotaQ }}" placeholder="Ketik kecamatan / kota tujuan…" style="border:1.5px solid #e2ead8;background:#FBFCF6;border-radius:12px;padding:12px 13px;font-family:'DM Sans';font-size:14.5px;color:#2C3327;outline:none;min-width:0">
+              <sc-if value="{{ invKotaAda }}" hint-placeholder-val="{{ false }}">
+                <div style="border:1px solid #e5eedb;border-radius:13px;overflow:hidden;max-height:190px;overflow-y:auto">
+                  <sc-for list="{{ invKotaList }}" as="k" hint-placeholder-count="2">
+                    <button onClick="{{ k.pick }}" style="width:100%;text-align:left;border:none;border-bottom:1px solid #f1f4e7;background:#fff;padding:11px 13px;font-family:'DM Sans';font-size:13.5px;color:#3D4736;cursor:pointer;min-height:46px" style-hover="background:#FDF6EF">{{ k.label }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ invOngkirInfo }}" hint-placeholder-val="{{ false }}">
+                <p style="margin:0;font-size:12.5px;line-height:1.55;color:#6B7760">{{ invOngkirInfo }}</p>
+              </sc-if>
+              <sc-if value="{{ invLayananAda }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <sc-for list="{{ invLayanan }}" as="s" hint-placeholder-count="2">
+                    <button onClick="{{ s.pick }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;border:1.5px solid #e2ead8;background:#fff;border-radius:13px;padding:11px 13px;cursor:pointer;min-height:48px" style-hover="border-color:#acc095">
+                      <span style="min-width:0">
+                        <span style="display:block;font-family:'Quicksand';font-weight:700;font-size:13px;color:#3D4736">{{ s.nama }}</span>
+                        <span style="display:block;font-size:11.5px;color:#7F8B72;margin-top:1px">{{ s.etd }}</span>
+                      </span>
+                      <span style="flex-shrink:0;font-family:'Quicksand';font-weight:700;font-size:13.5px;color:#55763F">{{ s.biaya }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+
+            <div class="duo" style="margin-top:15px">
+              <label style="display:flex;flex-direction:column;gap:7px;min-width:0">
+                <span style="font-family:'Quicksand';font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;color:#7F8B72">Ongkos kirim</span>
+                <input value="{{ invOngkir }}" onChange="{{ setInvOngkir }}" inputmode="numeric" placeholder="0" style="border:1.5px solid #e2ead8;background:#FBFCF6;border-radius:12px;padding:12px 13px;font-size:15px;outline:none;min-width:0" style-focus="border-color:#7E9B62">
+              </label>
+              <label style="display:flex;flex-direction:column;gap:7px;min-width:0">
+                <span style="font-family:'Quicksand';font-weight:700;font-size:11.5px;letter-spacing:.5px;text-transform:uppercase;color:#7F8B72">Potongan</span>
+                <input value="{{ invDiskon }}" onChange="{{ setInvDiskon }}" inputmode="numeric" placeholder="0" style="border:1.5px solid #e2ead8;background:#FBFCF6;border-radius:12px;padding:12px 13px;font-size:15px;outline:none;min-width:0" style-focus="border-color:#7E9B62">
+              </label>
+            </div>
+
+            <div style="margin-top:18px;background:#FBF3EA;border:1px solid #E5EDD6;border-radius:15px;padding:14px 16px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+                <span style="font-size:13.5px;color:#6B7760">Subtotal barang</span>
+                <span style="font-family:'Quicksand';font-weight:600;font-size:15px">{{ invSubtotal }}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:6px">
+                <span style="font-size:13.5px;color:#6B7760">Ongkos kirim</span>
+                <span style="font-family:'Quicksand';font-weight:600;font-size:15px">{{ invOngkirTxt }}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:6px">
+                <span style="font-size:13.5px;color:#6B7760">Potongan</span>
+                <span style="font-family:'Quicksand';font-weight:600;font-size:15px;color:#749949">{{ invDiskonTxt }}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:10px;padding-top:10px;border-top:1px dashed #DBE4C9">
+                <span style="font-family:'Quicksand';font-weight:700;font-size:14.5px;color:#465239">Total tagihan</span>
+                <span style="font-family:'Quicksand';font-weight:700;font-size:22px;color:#2C3327">{{ invTotal }}</span>
+              </div>
+            </div>
+
+            <button onClick="{{ invBuat }}" disabled="{{ sibuk }}" style="width:100%;margin-top:15px;border:none;background:{{ simpanBg }};color:#fff;font-family:'Quicksand';font-weight:700;font-size:15.5px;min-height:52px;border-radius:14px;cursor:{{ simpanCur }};transition:background .2s ease">{{ invLabel }}</button>
+
+            <sc-if value="{{ invTeks }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:16px;background:#F3F8F4;border:1px solid #CFE3D5;border-radius:15px;padding:16px;animation:fadeUp .3s ease both">
+                <p style="margin:0;font-family:'Quicksand';font-weight:700;font-size:14px;color:#38624A">Invoice {{ invOrderId }} tercatat</p>
+                <pre style="margin:10px 0 0;max-height:34vh;overflow-y:auto;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:#3F5C4B;background:#fff;border:1px solid #DCEBE1;border-radius:11px;padding:12px">{{ invTeks }}</pre>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:13px">
+                  <a href="{{ invWaManual }}" target="_blank" style="display:flex;align-items:center;border:none;background:#3F9E6E;color:#fff;font-family:'Quicksand';font-weight:700;font-size:13px;min-height:44px;padding:0 20px;border-radius:999px;text-decoration:none">Kirim lewat WhatsApp</a>
+                  <button onClick="{{ invSalinTeks }}" style="border:1px solid #BFD9C8;background:#fff;color:#38624A;font-family:'Quicksand';font-weight:700;font-size:13px;min-height:44px;padding:0 18px;border-radius:999px;cursor:pointer">Salin teks</button>
+                  <button onClick="{{ invCetak }}" style="border:1px solid #BFD9C8;background:#fff;color:#38624A;font-family:'Quicksand';font-weight:700;font-size:13px;min-height:44px;padding:0 18px;border-radius:999px;cursor:pointer">Cetak / PDF</button>
+                  <button onClick="{{ invReset }}" style="border:1px solid #BFD9C8;background:transparent;color:#4A6B57;font-family:'Quicksand';font-weight:700;font-size:13px;min-height:44px;padding:0 18px;border-radius:999px;cursor:pointer">Invoice baru</button>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ invLink }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:16px;background:#F3F8F4;border:1px solid #CFE3D5;border-radius:15px;padding:16px;animation:fadeUp .3s ease both">
+                <p style="margin:0;font-family:'Quicksand';font-weight:700;font-size:14px;color:#38624A">Tagihan {{ invOrderId }} siap</p>
+                <p style="margin:8px 0 0;font-size:12.5px;line-height:1.6;color:#4A6B57;word-break:break-all">{{ invLink }}</p>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:13px">
+                  <button onClick="{{ invSalin }}" style="border:1px solid #BFD9C8;background:#fff;color:#38624A;font-family:'Quicksand';font-weight:700;font-size:13px;min-height:44px;padding:0 18px;border-radius:999px;cursor:pointer">Salin link</button>
+                  <a href="{{ invWa }}" target="_blank" style="display:flex;align-items:center;border:1px solid #BFD9C8;background:#fff;color:#38624A;font-family:'Quicksand';font-weight:700;font-size:13px;min-height:44px;padding:0 18px;border-radius:999px;text-decoration:none">Kirim lewat WhatsApp</a>
+                  <button onClick="{{ invReset }}" style="border:1px solid #BFD9C8;background:transparent;color:#4A6B57;font-family:'Quicksand';font-weight:700;font-size:13px;min-height:44px;padding:0 18px;border-radius:999px;cursor:pointer">Tagihan baru</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
         </div>
-      </div>
-    </section>
-  </main>
-
-  <footer style="background:var(--navy);color:rgba(255,255,255,.7)">
-    <div style="max-width:1280px;margin:0 auto;padding:22px 24px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;font-size:12px">
-      <span>Panel Admin Internal — Dashboard Monitoring Penyerapan Anggaran</span>
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px">Konfigurasi: data-source.js · Backend: Code.gs</span>
+      </sc-if>
     </div>
-  </footer>
+  </sc-if>
 </div>
-</sc-if>
-</x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;defaultDark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Tampilan&quot;}}">
-/**
- * Admin Panel (internal) — kelola Butir Kegiatan, Revisi Pagu, dan Revisi RPD.
- *
- * TIDAK ADA input pencairan terpisah: begitu sebuah butir ditetapkan ke tahap
- * SP2D, nominalnya otomatis tercatat sebagai realisasi pada monitoring anggaran.
- * Tidak ada gerbang token: sistem internal, pembatasan dilakukan di level hosting.
- *
- * Komponen modular yang dipakai:
- *   AdminControls.dc.html  → form input/edit butir
- *   ActivityTable.dc.html  → tabel butir + kontrol tahapan berkas
- *
- * ⚡ INTEGRASI API: seluruh panggilan ada di data-source.js
- *   fetchAll() / addButir() / updateButir() / deleteButir() / updateAnggaran() / updateRPD()
- *   Untuk real-time, ganti polling (POLL_MS) dengan langganan WebSocket dan
- *   panggil this.terapkan(data) setiap ada pesan masuk.
- */
-const TAHAP_FALLBACK = [
-  { key: 'TU', urut: 1, label: 'Verifikasi Tim TU Pusdatin KP', pendek: 'Verifikasi TU', color: 'var(--blue)', bg: 'rgba(37,99,201,.12)' },
-  { key: 'KEUANGAN', urut: 2, label: 'Verifikasi Tim Keuangan', pendek: 'Verifikasi Keuangan', color: 'var(--navy-3)', bg: 'rgba(27,64,121,.12)' },
-  { key: 'SP2D', urut: 3, label: 'SP2D', pendek: 'SP2D', color: 'var(--green)', bg: 'var(--green-bg)' }
-];
-const POLL_MS = 60000;
-const KOSONG = { id: '', komponen: '', nama: '', nominal: '', tanggal: new Date().toISOString().slice(0, 10), status: 'TU', catatan: '', berkas: '', revisi: false, picNama: '', picNip: '', picWa: '' };
 
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;orderApiUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://script.google.com/macros/s/AKfycbxDPZau0KIR2vm11NqpfJjNB9VLDJ0ivWjXKtxWfJ_M24aPtsoHCe1t24IxXD4l9Ek7/exec&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Koneksi&quot;}}">
 class Component extends DCLogic {
   state = {
-    sesi: null, siapMasuk: false,
-    anggaran: [], pencairan: [], butir: [], source: '—', loading: true,
-    tab: 'butir', theme: null,
-    formButir: { ...KOSONG }, editingId: '', busyButir: false, errButir: '', okButir: '',
-    cari: '', filterKomponen: 'ALL', filterStatus: 'ALL',
-    rpd: [],
-    halaman: 1, perHalaman: 6,
-    kunciRpd: {},               // {komponenId: {bulanIndex: true}} — sel RPD yang dikunci
-    riwayat: [], riwayatBuka: false, riwayatMuat: false,
-    formKomp: { id: '', tipe: 'SUB', parent: '', nama: '', pagu: '' }, busyKomp: false, formKompBuka: false,
-    cariPagu: '', draftPagu: {}, busyPagu: {}, pesanPagu: '', pesanPaguOk: true,
-    rpdKomponen: '', draftRpd: [], busyRpd: false, pesanRpd: '', pesanRpdOk: true
+    pin: "", token: "", masuk: false, namaToko: "Machel Crochet",
+    total: 0, adaLagi: false, sibukLagi: false,
+    layar: "ops", tab: "Ringkasan",
+    head: [], rows: [], draft: null, barisDraft: 0, kolomUrutan: -1, dragI: -1,
+    stat: null, statHari: 30, statSibuk: false, statErr: "",
+    cari: "", msg: "", msgTipe: "info", sibuk: false,
+    inv: { mode: "online", caraBayar: "", kotaQ: "", kotaList: [], tujuan: null,
+      layanan: [], pilih: null, ongkirInfo: "", teks: "",
+      nama: "", email: "", hp: "", alamat: "", ongkir: "", diskon: "", link: "", orderId: "",
+      items: [{ name: "", qty: "1", price: "" }] }
   };
 
-  async componentDidMount() {
-    this.ds = await import('./data-source.js');
-    // Pulihkan sesi yang masih berlaku (mis. setelah refresh halaman).
-    const sesi = this.ds.sesiAktif() ? this.ds.getSesi() : null;
-    this.setState({ sesi, siapMasuk: true });
-    if (!sesi) return;
-    await this.load();
-    // Auto-refresh DIJEDA selama ada perubahan yang belum disimpan, supaya
-    // ketikan admin tidak tertimpa data dari server (permintaan "fitur kunci").
-    if (POLL_MS > 0) this.timer = setInterval(() => { if (!this.adaDraf()) this.load(true); }, POLL_MS);
-  }
-  componentWillUnmount() { clearInterval(this.timer); }
+  /* Layar utama: hanya urusan harian. */
+  TABS_OPS = ["Ringkasan", "Produk", "Pesanan", "Tagihan Khusus"];
 
-  onMasuk = async (sesi) => {
-    this.setState({ sesi });
-    await this.load();
-    if (POLL_MS > 0 && !this.timer) this.timer = setInterval(() => { if (!this.adaDraf()) this.load(true); }, POLL_MS);
+  /* Isi menu Pengaturan — dikelompokkan seperti pengaturan ponsel. */
+  GRUP = [
+    {
+      judul: "Tampilan website",
+      baris: [
+        { tab: "Galeri", label: "Galeri foto", desc: "Foto yang tampil di seksi galeri",
+          bg: "#F3EEF8", fg: "#7A5C9E",
+          d1: "M4 6.4A2.4 2.4 0 0 1 6.4 4h11.2A2.4 2.4 0 0 1 20 6.4v11.2a2.4 2.4 0 0 1-2.4 2.4H6.4A2.4 2.4 0 0 1 4 17.6Z",
+          d2: "M4.6 16.2 9 12l4 3.6 2.6-2.2L19.4 16" },
+        { tab: "Sosmed", label: "Media sosial", desc: "Akun & unggahan yang ditampilkan",
+          bg: "#f7f9f1", fg: "#8cab68",
+          d1: "M8.6 13.4a3.4 3.4 0 1 0 0-2.8", d2: "M17.5 8.2a2.6 2.6 0 1 0-2.4-1.5L9 10.2m0 3.6 6.1 3.5a2.6 2.6 0 1 0 .9-1.6" },
+        { tab: "Review", label: "Ulasan pelanggan", desc: "Sunting, sembunyikan, atau hapus ulasan",
+          bg: "#FDF3E4", fg: "#B5852F",
+          d1: "M12 4.4l2.3 4.7 5.2.8-3.8 3.6.9 5.1-4.6-2.4-4.6 2.4.9-5.1L4.5 9.9l5.2-.8Z", d2: "" }
+      ]
+    },
+    {
+      judul: "Sistem & data",
+      baris: [
+        { tab: "Pengaturan", label: "Pengaturan toko & API", desc: "Email, ongkir, pembayaran, AI, PIN admin",
+          bg: "#EDF2F8", fg: "#4E7398",
+          d1: "M4.5 8h9m3 0h3M4.5 16h3m3 0h9", d2: "M14.5 8a1.9 1.9 0 1 0 0-.1ZM9.5 16a1.9 1.9 0 1 0 0-.1Z" },
+        { tab: "Pelanggan", label: "Database pelanggan", desc: "Rekap belanja & segmen untuk promosi",
+          bg: "#EFF6F1", fg: "#4C8663",
+          d1: "M15.6 19.5v-1.7a3.4 3.4 0 0 0-3.4-3.4H7.3a3.4 3.4 0 0 0-3.4 3.4v1.7", d2: "M9.7 11a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8M20.1 19.5v-1.7a3.4 3.4 0 0 0-2.5-3.3" }
+      ]
+    }
+  ];
+
+  HINT = {
+    gambar: "Link Google Drive atau alamat gambar langsung.",
+    video: "Opsional. Link Drive/mp4 supaya diputar otomatis.",
+    stok: "Angka. 0 = habis.",
+    harga: "Angka saja, tanpa titik. Contoh 150000.",
+    custom: "Ya = tombol Chat & Pesan + label pre-order.",
+    tipe: "profil = tombol akun, post = kartu unggahan.",
+    urutan: "Angka kecil tampil lebih dulu.",
+    kunci: "Jangan diubah.",
+    nilai: "Isi pengaturan di sini."
   };
 
-  keluar = async () => {
-    if (this.adaDraf() && typeof window !== 'undefined' &&
-        !window.confirm('Ada isian yang belum disimpan. Tetap keluar?')) return;
-    clearInterval(this.timer); this.timer = null;
-    await this.ds.logoutAkun();
-    this.setState({ sesi: null, butir: [], anggaran: [], draftPagu: {}, formButir: { ...KOSONG } });
-  };
-
-  /* Opsi <select> disisipkan setelah commit — sinkronkan nilainya tiap render. */
-  componentDidUpdate() {
-    requestAnimationFrame(() => {
-      if (this.elRpd && this.elRpd.options.length && this.elRpd.value !== this.state.rpdKomponen) {
-        this.elRpd.value = this.state.rpdKomponen;
+  componentDidMount() {
+    try {
+      // Token sesi lebih dulu: kalau masih hidup, panel bisa langsung memuat
+      // dasbor tanpa memeriksa PIN ke tab Pengaturan sama sekali.
+      const t = sessionStorage.getItem("cbm_admin_token");
+      const p = sessionStorage.getItem("cbm_admin_pin");
+      if (t) {
+        this.setState({ token: t, masuk: true }, () => this.muatStat());
+        return;
       }
-    });
+      if (p) this.setState({ pin: p }, () => this.login());
+    } catch (e) {}
   }
 
-  /** Ada perubahan yang belum disimpan? Dipakai untuk menahan auto-refresh. */
-  adaDraf() {
-    const s = this.state;
-    if (Object.keys(s.draftPagu).some(k => s.draftPagu[k])) return true;
-    if (s.rpdKomponen && s.draftRpd.length === 12) {
-      const asli = this.rpdAwal(s.rpdKomponen);
-      if (s.draftRpd.some((v, i) => (Number(this.digits(v)) || 0) !== asli[i])) return true;
+  componentWillUnmount() { clearTimeout(this._cariJam); }
+
+  api() { return String(this.props.orderApiUrl || "").trim(); }
+
+  /**
+   * Satu permintaan ke konektor.
+   *
+   * Tiga hal yang sebelumnya tidak ada dan membuat panel terasa menggantung:
+   *  - batas waktu. Tanpa AbortController, Apps Script yang lambat membuat
+   *    tombol berputar tanpa akhir dan tanpa pesan.
+   *  - satu percobaan ulang. Kegagalan jaringan pertama pada koneksi seluler
+   *    sangat umum; mengulang sekali jauh lebih murah daripada memaksa
+   *    pengguna menekan Muat ulang.
+   *  - token sesi. PIN tidak lagi dikirim di setiap permintaan.
+   */
+  /**
+   * Aksi yang boleh diulang otomatis: hanya yang TIDAK mengubah apa pun.
+   *
+   * Daftar putih, bukan daftar hitam. Kalau nanti ada aksi baru yang mengubah
+   * data, ia otomatis tidak diulang tanpa perlu diingat-ingat — kebalikannya
+   * akan menghancurkan data pada aksi yang lupa ditandai.
+   */
+  AMAN_ULANG = ["adminRead", "adminStat", "adminLogin"];
+
+  _kunci = {};
+
+  /**
+   * Kunci sekali-pakai, dipegang per AKSI PENGGUNA — bukan per permintaan.
+   *
+   * Ini inti gunanya: kalau balasan hilang di jaringan dan pengguna menekan
+   * Simpan lagi, permintaan kedua membawa kunci yang SAMA, jadi konektor
+   * mengembalikan hasil yang lama daripada menulis dua kali. Kunci yang dibuat
+   * ulang setiap permintaan tidak menjaga apa pun.
+   *
+   * Dibuang setelah aksinya berhasil, dan dibuang saat pengguna mengubah isi
+   * borang — isi yang berbeda berarti aksi yang berbeda, bukan pengulangan.
+   */
+  kunciAksi(nama) {
+    if (!this._kunci[nama]) {
+      let k = "";
+      try { if (crypto && crypto.randomUUID) k = crypto.randomUUID().replace(/-/g, ""); } catch (e) {}
+      this._kunci[nama] = k || ("a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 12));
     }
-    const f = s.formButir;
-    if (f && (f.id || f.nama || f.nominal || f.catatan || f.berkas || f.picNama || f.picWa)) return true;
-    const k = s.formKomp;
-    if (k && (k.id || k.nama || k.pagu)) return true;
-    return false;
+    return this._kunci[nama];
   }
 
-  terapkan(d) {
-    this.setState({ anggaran: d.anggaran, pencairan: d.pencairan, butir: d.butir || [], rpd: d.rpd || [], source: d.source, loading: false });
-  }
-  async load(silent) {
-    if (!silent) this.setState({ loading: true });
-    try { this.terapkan(await this.ds.fetchAll()); }
-    catch (e) {
-      const f = this.ds.seedFallback();
-      this.terapkan({ ...f, source: f.source + ' (fetch gagal: ' + e.message + ')' });
-    }
-  }
+  lupakanKunci() { this._kunci = {}; }
 
-  digits = (v) => String(v || '').replace(/\D/g, '');
-  rupiahInput = (v) => { const d = this.digits(v); return d ? new Intl.NumberFormat('id-ID').format(Number(d)) : ''; };
+  kirim(body, opsi) {
+    const url = this.api();
+    if (!/^https?:\/\//i.test(url)) return Promise.reject(new Error("Alamat konektor belum diisi."));
 
-  sub(id) { return this.state.anggaran.find(r => r.id === id) || null; }
-  realisasiOf(row) {
-    if (!row) return 0;
-    if (row.tipe === 'SUB') return row.realisasi;
-    const kids = this.state.anggaran.filter(r => r.parent === row.id);
-    return kids.length ? kids.reduce((t, k) => t + k.realisasi, 0) : row.realisasi;
-  }
+    const o = opsi || {};
+    const bolehUlang = this.AMAN_ULANG.indexOf(body.type) > -1 && !o.tanpaUlang;
 
-  /* ------------------------- Butir Kegiatan (CRUD) ------------------------ */
-  onFieldButir = (field, value) => {
-    const v = field === 'nominal' ? this.rupiahInput(value) : value;   // 'revisi' datang sebagai boolean
-    this.setState(s => ({ formButir: { ...s.formButir, [field]: v }, errButir: '', okButir: '' }));
-  };
+    const kredensial = body.type === "adminLogin"
+      ? { pin: this.state.pin.trim() }
+      : { token: this.state.token || "", pin: this.state.token ? "" : this.state.pin.trim() };
 
-  submitButir = async () => {
-    const f = this.state.formButir;
-    const nominal = Number(this.digits(f.nominal)) || 0;
-    const nomor = (f.id || '').trim();
-    if (!nomor) return this.setState({ errButir: 'Nomor dokumen/surat wajib diisi (contoh: DIK-KU.03.01-23).', okButir: '' });
-    if (!this.state.editingId && this.state.butir.some(b => b.id === nomor)) {
-      return this.setState({ errButir: 'Nomor dokumen "' + nomor + '" sudah dipakai butir lain.', okButir: '' });
-    }
-    if (!f.komponen) return this.setState({ errButir: 'Subkomponen wajib dipilih.', okButir: '' });
-    if (!f.nama.trim()) return this.setState({ errButir: 'Nama butir kegiatan wajib diisi.', okButir: '' });
-    if (nominal <= 0) return this.setState({ errButir: 'Nominal harus lebih besar dari 0.', okButir: '' });
-    if (f.berkas && !/^https?:\/\//i.test(f.berkas)) return this.setState({ errButir: 'Link berkas harus diawali http:// atau https://', okButir: '' });
-    if (!(f.picNama || '').trim()) return this.setState({ errButir: 'Nama PIC wajib diisi.', okButir: '' });
-    if (!(f.picWa || '').trim()) return this.setState({ errButir: 'Nomor WhatsApp PIC wajib diisi.', okButir: '' });
-    if (this.digits(f.picWa).length < 9) return this.setState({ errButir: 'Nomor WhatsApp PIC tidak valid.', okButir: '' });
-    if (f.revisi && !f.catatan.trim()) return this.setState({ errButir: 'Butir bertanda revisi wajib menyertakan alasan pada kolom Catatan.', okButir: '' });
+    // Hanya aksi yang penelponnya memberi nama (o.aksi) yang dijaga kunci.
+    // Aksi tanpa nama — mis. simpanUrutan, yang hasilnya sama berapa kali pun
+    // dijalankan — tidak perlu dan tidak dijaga.
+    const idem = !bolehUlang && o.aksi ? { aksiId: this.kunciAksi(o.aksi) } : {};
+    const isi = JSON.stringify(Object.assign(kredensial, idem, body));
 
-    this.setState({ busyButir: true, errButir: '', okButir: '' });
-    const payload = {
-      ID_Butir: nomor,
-      ID_Komponen: f.komponen, Nama_Butir: f.nama.trim(), Nominal: nominal,
-      Tanggal_Terima: f.tanggal, Status: f.status, Catatan: f.catatan.trim(),
-      Link_Berkas: f.berkas.trim(), Revisi: !!f.revisi,
-      PIC_Nama: (f.picNama || '').trim(), PIC_NIP: (f.picNip || '').trim(), PIC_WA: (f.picWa || '').trim()
+    const sekali = () => {
+      const ac = typeof AbortController === "function" ? new AbortController() : null;
+      const jam = ac ? setTimeout(() => { try { ac.abort(); } catch (e) {} }, o.batasMs || 25000) : 0;
+      return fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: isi,
+        signal: ac ? ac.signal : undefined
+      }).then(r => r.text()).finally(() => clearTimeout(jam));
     };
-    try {
-      let pesan;
-      if (this.state.editingId) {
-        const res = await this.ds.updateButir({ ID_Butir: this.state.editingId, ...payload });
-        this.setState(s => ({
-          butir: s.butir.map(b => b.id === s.editingId ? {
-            ...b, komponenId: f.komponen, nama: payload.Nama_Butir, nominal, tanggal: f.tanggal,
-            status: f.status, catatan: payload.Catatan, berkas: payload.Link_Berkas, revisi: !!f.revisi,
-            picNama: payload.PIC_Nama, picNip: payload.PIC_NIP, picWa: this.ds.normalWa(payload.PIC_WA)
-          } : b)
-        }));
-        pesan = res.simulated ? 'Simulasi: perubahan ' + this.state.editingId + ' hanya tampil lokal.' : 'Butir ' + this.state.editingId + ' diperbarui.';
-      } else {
-        const res = await this.ds.addButir(payload);
-        const baru = {
-          id: res.id || nomor, komponenId: f.komponen, nama: payload.Nama_Butir, nominal, tanggal: f.tanggal,
-          status: f.status, catatan: payload.Catatan, berkas: payload.Link_Berkas, revisi: !!f.revisi,
-          picNama: payload.PIC_Nama, picNip: payload.PIC_NIP, picWa: this.ds.normalWa(payload.PIC_WA)
-        };
-        this.setState(s => ({ butir: [baru].concat(s.butir) }));
-        pesan = res.simulated
-          ? 'Simulasi (MODE seed): butir ' + baru.id + ' tampil lokal, belum tersimpan ke Sheets.'
-          : 'Butir ' + baru.id + ' tersimpan ke sheet "Butir".';
-      }
-      this.setState({ busyButir: false, editingId: '', okButir: pesan, formButir: { ...KOSONG, komponen: f.komponen } });
-      if (this.ds.CONFIG.MODE === 'appscript') setTimeout(() => this.load(true), 1200);
-    } catch (e) {
-      this.setState({ busyButir: false, errButir: 'Gagal menyimpan: ' + ((e && e.message) || e) });
-    }
-  };
 
-  mulaiEdit = (b) => {
-    this.setState({
-      tab: 'butir', editingId: b.id, errButir: '', okButir: '',
-      formButir: {
-        id: b.id, komponen: b.komponenId, nama: b.nama, nominal: new Intl.NumberFormat('id-ID').format(b.nominal || 0),
-        tanggal: b.tanggal || KOSONG.tanggal,
-        status: String(b.status || 'TU').toUpperCase() === 'REVISI' ? 'TU' : (b.status || 'TU'),
-        catatan: b.catatan || '', berkas: b.berkas || '',
-        revisi: b.revisi === true || String(b.status || '').toUpperCase() === 'REVISI',
-        picNama: b.picNama || '', picNip: b.picNip || '', picWa: b.picWa || ''
-      }
-    });
-    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-  cancelEdit = () => this.setState({ editingId: '', formButir: { ...KOSONG }, errButir: '', okButir: '' });
-  resetButir = () => this.setState({ formButir: { ...KOSONG }, errButir: '', okButir: '' });
-
-  ubahStatus = async (b, statusBaru) => {
-    if (!statusBaru || statusBaru === b.status) return;
-    this.setState(s => ({ butir: s.butir.map(x => x.id === b.id ? { ...x, status: statusBaru } : x), okButir: '', errButir: '' }));
-    try {
-      const res = await this.ds.updateButir({ ID_Butir: b.id, Status: statusBaru });
-      this.setState({ okButir: (res.simulated ? 'Simulasi: ' : '') + b.id + ' → tahapan ' + statusBaru + '.' });
-    } catch (e) {
-      this.setState({ butir: this.state.butir.map(x => x.id === b.id ? { ...x, status: b.status } : x), errButir: 'Gagal memperbarui tahapan: ' + e.message });
-    }
-  };
-
-  /** Toggle penanda revisi (bukan perubahan tahap). */
-  tandaiRevisi = async (b, revisiBaru) => {
-    if (revisiBaru && !(b.catatan || '').trim()) {
-      const alasan = typeof window !== 'undefined' ? window.prompt('Alasan revisi untuk ' + b.id + ':', '') : '';
-      if (alasan === null) return;
-      b = { ...b, catatan: (alasan || '').trim() };
-    }
-    const sebelum = this.state.butir;
-    this.setState(s => ({
-      butir: s.butir.map(x => x.id === b.id ? { ...x, revisi: revisiBaru, catatan: b.catatan } : x),
-      okButir: '', errButir: ''
-    }));
-    try {
-      const res = await this.ds.updateButir({ ID_Butir: b.id, Revisi: revisiBaru, Catatan: b.catatan || '' });
-      this.setState({ okButir: (res.simulated ? 'Simulasi: ' : '') + b.id + (revisiBaru ? ' ditandai perlu revisi.' : ' — penanda revisi dilepas.') });
-    } catch (e) {
-      this.setState({ butir: sebelum, errButir: 'Gagal memperbarui penanda revisi: ' + e.message });
-    }
-  };
-
-  hapusButir = async (b) => {
-    if (typeof window !== 'undefined' && !window.confirm('Hapus butir ' + b.id + ' — ' + b.nama + '?')) return;
-    const sebelum = this.state.butir;
-    this.setState(s => ({ butir: s.butir.filter(x => x.id !== b.id), okButir: '', errButir: '' }));
-    try {
-      const res = await this.ds.deleteButir(b.id);
-      this.setState({ okButir: (res.simulated ? 'Simulasi: ' : '') + 'Butir ' + b.id + ' dihapus.' });
-    } catch (e) {
-      this.setState({ butir: sebelum, errButir: 'Gagal menghapus: ' + e.message });
-    }
-  };
-
-  /* ----------------------------- Riwayat ---------------------------------- */
-  bukaRiwayat = async () => {
-    const buka = !this.state.riwayatBuka;
-    this.setState({ riwayatBuka: buka });
-    if (!buka || this.state.riwayat.length) return;
-    this.setState({ riwayatMuat: true });
-    try {
-      const log = await this.ds.fetchLog(40);
-      this.setState({ riwayat: log, riwayatMuat: false });
-    } catch (e) {
-      this.setState({ riwayatMuat: false, riwayat: [{ waktu: '—', aksi: 'GAGAL', detail: e.message, pengguna: '' }] });
-    }
-  };
-
-  /* ------------------- Tambah / hapus komponen (Revisi Pagu) --------------- */
-  onKompField = (field, value) => {
-    const v = field === 'pagu' ? this.rupiahInput(value) : value;
-    this.setState(s => ({ formKomp: { ...s.formKomp, [field]: v }, pesanPagu: '' }));
-  };
-
-  simpanKomponen = async () => {
-    const f = this.state.formKomp;
-    const id = (f.id || '').trim();
-    const pagu = Number(this.digits(f.pagu)) || 0;
-    if (!id) return this.setState({ pesanPagu: 'Kode komponen wajib diisi (mis. 051.0P atau 051.0A-521212).', pesanPaguOk: false });
-    if (this.state.anggaran.some(r => r.id === id)) return this.setState({ pesanPagu: 'Kode "' + id + '" sudah dipakai.', pesanPaguOk: false });
-    if (!(f.nama || '').trim()) return this.setState({ pesanPagu: 'Nama kegiatan wajib diisi.', pesanPaguOk: false });
-    if (f.tipe === 'SUB' && !f.parent) return this.setState({ pesanPagu: 'Pilih komponen utama induk untuk subkomponen.', pesanPaguOk: false });
-
-    this.setState({ busyKomp: true, pesanPagu: '' });
-    try {
-      const res = await this.ds.addKomponen({
-        ID_Komponen: id, Tipe: f.tipe, Parent_ID: f.tipe === 'SUB' ? f.parent : '',
-        Nama_Kegiatan: f.nama.trim(), Pagu_Anggaran: pagu
+    return sekali()
+      .catch(err => {
+        // Hanya pembacaan yang diulang. Mengulang adminSave/adminDelete akan
+        // menambah baris ganda atau menghapus baris yang salah, karena
+        // permintaan pertama mungkin sudah berhasil sebelum balasannya hilang.
+        if (!bolehUlang) throw err;
+        return sekali();
+      })
+      .then(t => {
+        let j = null;
+        try { j = JSON.parse(t); } catch (e) {}
+        if (!j) throw new Error("Konektor membalas sesuatu yang tidak dimengerti. Pastikan sudah Deploy New version.");
+        if (!j.ok) {
+          // Sesi kedaluwarsa harus mengembalikan pengguna ke layar PIN, bukan
+          // meninggalkannya di panel yang setiap tombolnya gagal.
+          if (j.sesiHabis) {
+            try { sessionStorage.removeItem("cbm_admin_token"); } catch (e) {}
+            this.setState({ token: "", masuk: false, rows: [], head: [] });
+          }
+          throw new Error((j.message || "Permintaan ditolak.") + (j.detail ? " — " + String(j.detail).slice(0, 220) : ""));
+        }
+        // Berhasil = aksinya tuntas. Kuncinya dibuang supaya penekanan tombol
+        // berikutnya dianggap aksi baru, bukan pengulangan yang jawabannya
+        // sudah tersimpan.
+        if (o.aksi) delete this._kunci[o.aksi];
+        return j;
+      })
+      .catch(err => {
+        const nama = String((err && err.name) || "");
+        if (nama === "AbortError") throw new Error("Konektor tidak menjawab dalam 25 detik. Coba lagi sebentar.");
+        if (err instanceof TypeError) throw new Error("Tidak bisa menghubungi konektor. Periksa koneksi internet.");
+        throw err;
       });
-      this.setState(s => ({
-        busyKomp: false,
-        anggaran: s.anggaran.concat([{ id, tipe: f.tipe, parent: f.tipe === 'SUB' ? f.parent : '', nama: f.nama.trim(), pagu, realisasi: 0 }]),
-        formKomp: { id: '', tipe: f.tipe, parent: f.parent, nama: '', pagu: '' },
-        pesanPagu: (res.simulated ? 'Simulasi: ' : '') + 'Komponen ' + id + ' ditambahkan.',
-        pesanPaguOk: true
-      }));
-      if (!res.simulated) setTimeout(() => this.load(true), 1200);
-    } catch (e) {
-      this.setState({ busyKomp: false, pesanPagu: 'Gagal menambah: ' + e.message, pesanPaguOk: false });
-    }
-  };
-
-  hapusKomponen = async (row) => {
-    const anak = this.state.anggaran.filter(r => r.parent === row.id).length;
-    const konfirm = 'Hapus ' + row.id + ' — ' + row.nama + '?' +
-      (anak ? '\n\n' + anak + ' subkomponen di bawahnya ikut terhapus.' : '');
-    if (typeof window !== 'undefined' && !window.confirm(konfirm)) return;
-    this.setState(s => ({ busyPagu: { ...s.busyPagu, [row.id]: true }, pesanPagu: '' }));
-    try {
-      const res = await this.ds.deleteKomponen(row.id);
-      this.setState(s => ({
-        anggaran: s.anggaran.filter(r => r.id !== row.id && r.parent !== row.id),
-        busyPagu: { ...s.busyPagu, [row.id]: false },
-        pesanPagu: (res.simulated ? 'Simulasi: ' : '') + 'Komponen ' + row.id + ' dihapus.',
-        pesanPaguOk: true
-      }));
-      if (!res.simulated) setTimeout(() => this.load(true), 1200);
-    } catch (e) {
-      this.setState(s => ({ busyPagu: { ...s.busyPagu, [row.id]: false }, pesanPagu: 'Gagal menghapus: ' + e.message, pesanPaguOk: false }));
-    }
-  };
-
-  /* --------------------------- Revisi Pagu -------------------------------- */
-  onPaguField = (id, field, value) => {
-    const v = field === 'pagu' ? this.rupiahInput(value) : value;
-    this.setState(s => ({ draftPagu: { ...s.draftPagu, [id]: { ...(s.draftPagu[id] || {}), [field]: v } }, pesanPagu: '' }));
-  };
-
-  simpanPagu = async (row) => {
-    const d = this.state.draftPagu[row.id] || {};
-    const nama = (d.nama !== undefined ? d.nama : row.nama).trim();
-    const pagu = Number(this.digits(d.pagu !== undefined ? d.pagu : String(row.pagu)));
-    if (!nama) return this.setState({ pesanPagu: 'Nama kegiatan tidak boleh kosong.', pesanPaguOk: false });
-    if (!(pagu >= 0)) return this.setState({ pesanPagu: 'Pagu harus berupa angka.', pesanPaguOk: false });
-
-    this.setState(s => ({ busyPagu: { ...s.busyPagu, [row.id]: true }, pesanPagu: '' }));
-    try {
-      const res = await this.ds.updateAnggaran({ ID_Komponen: row.id, Nama_Kegiatan: nama, Pagu_Anggaran: pagu });
-      this.setState(s => ({
-        anggaran: s.anggaran.map(r => r.id === row.id ? { ...r, nama, pagu } : r),
-        draftPagu: { ...s.draftPagu, [row.id]: undefined },
-        busyPagu: { ...s.busyPagu, [row.id]: false },
-        pesanPagu: (res.simulated ? 'Simulasi: ' : '') + row.id + ' diperbarui — pagu Rp ' + this.ds.fmt(pagu) + '.',
-        pesanPaguOk: true
-      }));
-      if (!res.simulated) setTimeout(() => this.load(true), 1200);
-    } catch (e) {
-      this.setState(s => ({ busyPagu: { ...s.busyPagu, [row.id]: false }, pesanPagu: 'Gagal menyimpan: ' + e.message, pesanPaguOk: false }));
-    }
-  };
-
-  /* ---------------------------- Revisi RPD -------------------------------- */
-  rpdAwal(id) {
-    const r = (this.state.rpd || []).find(x => x.komponenId === id);
-    return r ? r.bulan.slice() : new Array(12).fill(0);
-  }
-  pilihRpd = (id) => {
-    this.setState({
-      rpdKomponen: id,
-      draftRpd: id ? this.rpdAwal(id).map(v => (v ? new Intl.NumberFormat('id-ID').format(v) : '')) : [],
-      pesanRpd: ''
-    });
-  };
-  toggleKunci = (i) => {
-    const id = this.state.rpdKomponen;
-    this.setState(s => {
-      const k = { ...(s.kunciRpd[id] || {}) };
-      k[i] = !k[i];
-      return { kunciRpd: { ...s.kunciRpd, [id]: k } };
-    });
-  };
-  terkunci(i) {
-    const k = this.state.kunciRpd[this.state.rpdKomponen] || {};
-    return !!k[i];
   }
 
-  onRpdBulan = (i, value) => {
-    if (this.terkunci(i)) return;      // sel terkunci: abaikan perubahan
-    this.setState(s => {
-      const d = s.draftRpd.slice();
-      d[i] = this.rupiahInput(value);
-      return { draftRpd: d, pesanRpd: '' };
-    });
-  };
-  resetRpd = () => this.pilihRpd(this.state.rpdKomponen);
+  pesan(msg, tipe) { this.setState({ msg: msg || "", msgTipe: tipe || "info" }); }
 
-  simpanRpd = async () => {
-    const id = this.state.rpdKomponen;
-    if (!id) return;
-    const angka = this.state.draftRpd.map(v => Number(this.digits(v)) || 0);
-    this.setState({ busyRpd: true, pesanRpd: '' });
-    try {
-      const res = await this.ds.updateRPD({ ID_Komponen: id, Bulan: angka });
-      const total = angka.reduce((t, v) => t + v, 0);
-      this.setState(s => {
-        const ada = (s.rpd || []).some(x => x.komponenId === id);
-        const baris = { komponenId: id, bulan: angka, total };
-        return {
-          busyRpd: false,
-          rpd: ada ? s.rpd.map(x => x.komponenId === id ? baris : x) : (s.rpd || []).concat([baris]),
-          pesanRpd: (res.simulated ? 'Simulasi: ' : '') + 'RPD ' + id + ' tersimpan — total setahun Rp ' + this.ds.fmt(total) + '.',
-          pesanRpdOk: true
-        };
-      });
-      if (!res.simulated) setTimeout(() => this.load(true), 1200);
-    } catch (e) {
-      this.setState({ busyRpd: false, pesanRpd: 'Gagal menyimpan: ' + e.message, pesanRpdOk: false });
-    }
+  keAtas() { try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) {} }
+
+  login = () => {
+    if (!this.state.pin.trim()) return this.pesan("PIN belum diisi.", "err");
+    this.setState({ sibuk: true, msg: "" });
+    // hari dikirim agar konektor bisa menyertakan ringkasan dasbor di balasan
+    // login — satu perjalanan, bukan dua.
+    this.kirim({ type: "adminLogin", hari: this.state.statHari || 30 })
+      .then(j => {
+        try {
+          if (j.token) sessionStorage.setItem("cbm_admin_token", j.token);
+          else sessionStorage.setItem("cbm_admin_pin", this.state.pin.trim());
+        } catch (e) {}
+        this.setState({
+          masuk: true, sibuk: false, token: j.token || "",
+          namaToko: j.toko || this.state.namaToko,
+          stat: j.stat && j.stat.ok ? j.stat : null
+        });
+        if (this.state.tab !== "Ringkasan") this.muat();
+        else if (!(j.stat && j.stat.ok)) this.muatStat();
+      })
+      .catch(e => { this.setState({ sibuk: false }); this.pesan(e.message, "err"); });
   };
+
+  keluar = () => {
+    try {
+      sessionStorage.removeItem("cbm_admin_pin");
+      sessionStorage.removeItem("cbm_admin_token");
+    } catch (e) {}
+    this.setState({ masuk: false, pin: "", token: "", rows: [], head: [], draft: null, msg: "", layar: "ops", tab: "Ringkasan", stat: null, total: 0, adaLagi: false });
+  };
+
+  muat = () => {
+    if (!this.tabData()) return;
+    this.setState({ sibuk: true });
+    this.kirim({ type: "adminRead", tab: this.state.tab, cari: this.state.cari.trim(), offset: 0, limit: this.HAL })
+      .then(j => this.setState({
+        head: j.head || [], rows: j.rows || [], draft: null, sibuk: false,
+        kolomUrutan: typeof j.kolomUrutan === "number" ? j.kolomUrutan : -1, dragI: -1,
+        total: typeof j.total === "number" ? j.total : (j.rows || []).length,
+        // Konektor versi lama tidak mengirim adaLagi dan sudah memberi semua baris.
+        adaLagi: !!j.adaLagi
+      }))
+      .catch(e => { this.setState({ sibuk: false }); this.pesan(e.message, "err"); });
+  };
+
+  HAL = 150;
+
+  /** Menambah satu halaman berikutnya ke daftar yang sudah tampil. */
+  muatLagi = () => {
+    if (this.state.sibukLagi || !this.state.adaLagi) return;
+    this.setState({ sibukLagi: true });
+    this.kirim({ type: "adminRead", tab: this.state.tab, cari: this.state.cari.trim(), offset: this.state.rows.length, limit: this.HAL })
+      .then(j => this.setState(s => ({
+        rows: s.rows.concat(j.rows || []),
+        sibukLagi: false,
+        total: typeof j.total === "number" ? j.total : s.total,
+        adaLagi: !!j.adaLagi
+      })))
+      .catch(e => { this.setState({ sibukLagi: false }); this.pesan(e.message, "err"); });
+  };
+
+  /**
+   * Pencarian dikerjakan konektor. Ditunda 400 ms supaya mengetik satu kata
+   * tidak mengirim satu permintaan per huruf.
+   */
+  setCari = v => {
+    this.setState({ cari: v });
+    clearTimeout(this._cariJam);
+    this._cariJam = setTimeout(() => { if (this.tabData()) this.muat(); }, 400);
+  };
+
+  tabData() {
+    const s = this.state;
+    if (s.layar === "set") return false;
+    return s.tab !== "Tagihan Khusus" && s.tab !== "Ringkasan";
+  }
+
+  gantiTab(t) {
+    clearTimeout(this._cariJam);
+    this.setState({ layar: "ops", tab: t, draft: null, cari: "", msg: "", head: [], rows: [], total: 0, adaLagi: false },
+      () => {
+        if (t === "Ringkasan") this.muatStat();
+        else if (t !== "Tagihan Khusus") this.muat();
+      });
+  }
+
+  muatStat = (hari) => {
+    const h = hari || this.state.statHari || 30;
+    this.setState({ statHari: h, statSibuk: true, statErr: "" });
+    this.kirim({ type: "adminStat", hari: h })
+      .then(j => this.setState({ stat: j, statSibuk: false, statErr: "",
+        namaToko: j.toko || this.state.namaToko }))
+      .catch(e => this.setState({ statSibuk: false, stat: null, statErr: e.message || "gagal" }));
+  };
+
+  bukaSetting = () => {
+    this.setState({ layar: "set", draft: null, msg: "" });
+    this.keAtas();
+  };
+
+  bukaTabSetting(t) {
+    this.setState({ layar: "setTab", tab: t, draft: null, cari: "", msg: "", head: [], rows: [] },
+      () => this.muat());
+    this.keAtas();
+  }
+
+  kembali = () => {
+    const s = this.state;
+    if (s.layar === "setTab") return this.setState({ layar: "set", draft: null, msg: "" });
+    if (s.layar === "set") return this.setState({ layar: "ops", tab: "Ringkasan", msg: "" }, () => this.muatStat());
+  };
+
+  /* ---------- urutan: tahan lalu geser ---------- */
+
+  /** Kolom "urutan" dibaca dari head — tidak menunggu konektor versi baru. */
+  kolUrut() {
+    const i = (this.state.head || []).findIndex(h => /^urutan$/i.test(String(h).trim()));
+    return i > -1 ? i : (typeof this.state.kolomUrutan === "number" ? this.state.kolomUrutan : -1);
+  }
+
+  /** Tab yang boleh diurutkan manual. Produk belum punya kolom urutan —
+   *  kolomnya dibuat otomatis oleh konektor saat pertama kali digeser. */
+  TAB_URUT = ["Produk", "Galeri", "Sosmed"];
+
+  bisaUrut() {
+    const boleh = this.kolUrut() > -1 || this.TAB_URUT.indexOf(this.state.tab) > -1;
+    return boleh && !this.state.cari.trim() && this.state.rows.length > 1;
+  }
+
+  mulaiGeser = (i, e) => {
+    if (!this.bisaUrut()) return;
+    e.preventDefault();
+    this.setState({ dragI: i, msg: "" });
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    this._geser = { dari: i, ke: i };
+  };
+
+  saatGeser = e => {
+    if (this.state.dragI < 0 || !this._geser) return;
+    e.preventDefault();
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const baris = el && el.closest ? el.closest("[data-ri]") : null;
+    if (!baris) return;
+    const ke = parseInt(baris.getAttribute("data-ri"), 10);
+    if (isNaN(ke) || ke === this.state.dragI) return;
+
+    this.setState(s => {
+      const rows = s.rows.slice();
+      const [item] = rows.splice(s.dragI, 1);
+      rows.splice(ke, 0, item);
+      return { rows, dragI: ke };
+    });
+    this._geser.ke = ke;
+  };
+
+  selesaiGeser = () => {
+    if (this.state.dragI < 0) return;
+    const pindah = this._geser && this._geser.dari !== this._geser.ke;
+    this.setState({ dragI: -1 });
+    this._geser = null;
+    if (pindah) this.simpanUrutan();
+  };
+
+  simpanUrutan() {
+    const urutan = this.state.rows.map((r, i) => ({ baris: r.baris, urutan: i + 1 }));
+    this.setState({ sibuk: true });
+    this.kirim({ type: "adminReorder", tab: this.state.tab, urutan })
+      .then(j => { this.setState({ sibuk: false }); this.pesan(j.pesan || "Urutan disimpan.", "ok"); this.muat(); })
+      .catch(e => { this.setState({ sibuk: false }); this.pesan(e.message, "err"); this.muat(); });
+  }
+
+  geserTombol(i, arah) {
+    const ke = i + arah;
+    if (ke < 0 || ke >= this.state.rows.length) return;
+    this.setState(s => {
+      const rows = s.rows.slice();
+      const [item] = rows.splice(i, 1);
+      rows.splice(ke, 0, item);
+      return { rows };
+    }, () => this.simpanUrutan());
+  }
+
+  bukaBaris(r) {
+    this.setState({ draft: r.sel.slice(), barisDraft: r.baris, msg: "" });
+    this.keAtas();
+  }
+
+  baru = () => {
+    const n = Math.max(1, this.state.head.length);
+    const kosong = new Array(n).fill("");
+    const iT = this.state.head.findIndex(h => /^tampil$/i.test(h));
+    if (iT > -1) kosong[iT] = "ya";
+    this.setState({ draft: kosong, barisDraft: 0, msg: "" });
+    this.keAtas();
+  };
+
+  simpan = () => {
+    if (this.state.sibuk) return;
+    this.setState({ sibuk: true });
+    this.kirim({ type: "adminSave", tab: this.state.tab, baris: this.state.barisDraft, sel: this.state.draft },
+      { aksi: "save:" + this.state.tab + ":" + this.state.barisDraft })
+      .then(j => { this.setState({ sibuk: false }); this.pesan(j.pesan || "Tersimpan.", "ok"); this.muat(); })
+      .catch(e => { this.setState({ sibuk: false }); this.pesan(e.message, "err"); });
+  };
+
+  hapus = () => {
+    if (this.state.sibuk || this.state.barisDraft < 2) return;
+    if (!window.confirm("Hapus baris ini dari spreadsheet? Tindakan ini tidak bisa dibatalkan.")) return;
+    this.setState({ sibuk: true });
+    this.kirim({ type: "adminDelete", tab: this.state.tab, baris: this.state.barisDraft },
+      { aksi: "del:" + this.state.tab + ":" + this.state.barisDraft })
+      .then(j => { this.setState({ sibuk: false }); this.pesan(j.pesan || "Dihapus.", "ok"); this.muat(); })
+      .catch(e => { this.setState({ sibuk: false }); this.pesan(e.message, "err"); });
+  };
+
+  // Mengubah isi borang berarti aksi yang berbeda — kunci lama tidak boleh
+  // dipakai lagi, kalau tidak konektor akan membalas dengan hasil yang lama.
+  setSel(i, v) { this.lupakanKunci(); this.setState(s => { const d = s.draft.slice(); d[i] = v; return { draft: d }; }); }
+
+  setInv(k, v) { this.lupakanKunci(); this.setState(s => ({ inv: { ...s.inv, [k]: v } })); }
+
+  setItem(i, k, v) {
+    this.lupakanKunci();
+    this.setState(s => {
+      const it = s.inv.items.slice();
+      it[i] = { ...it[i], [k]: v };
+      return { inv: { ...s.inv, items: it } };
+    });
+  }
+
+  angka(v) { return parseInt(String(v).replace(/[^0-9]/g, ""), 10) || 0; }
+
+  rupiah(n) { return "Rp" + Number(n || 0).toLocaleString("id-ID"); }
+
+  subtotalInv() {
+    return this.state.inv.items.reduce((a, i) =>
+      a + this.angka(i.price) * Math.max(1, this.angka(i.qty) || 1), 0);
+  }
+
+  totalInv() {
+    return this.subtotalInv() + this.angka(this.state.inv.ongkir) - this.angka(this.state.inv.diskon);
+  }
+
+  setInvKota = e => {
+    const v = e.target.value;
+    this.setState(s => ({ inv: { ...s.inv, kotaQ: v, tujuan: null, layanan: [] } }));
+    clearTimeout(this._kotaT);
+    if (v.trim().length < 3) return this.setState(s => ({ inv: { ...s.inv, kotaList: [] } }));
+    this._kotaT = setTimeout(() => this.cariKota(v.trim()), 420);
+  };
+
+  cariKota(q) {
+    const api = this.api();
+    if (!/^https?:\/\//i.test(api)) return;
+    fetch(api + (api.indexOf("?") > -1 ? "&" : "?") + "action=kota&q=" + encodeURIComponent(q))
+      .then(r => r.json())
+      .then(res => this.setState(s => ({ inv: { ...s.inv, kotaList: (res && res.hasil) || [] } })))
+      .catch(() => {});
+  }
+
+  pilihKota(k) {
+    this.setState(s => ({ inv: { ...s.inv, tujuan: k, kotaQ: k.label, kotaList: [], ongkirInfo: "Menghitung ongkir…" } }));
+    const api = this.api();
+    const berat = Math.max(250, this.state.inv.items.reduce((t, i) =>
+      t + (Math.max(1, this.angka(i.qty) || 1) * 250), 0));
+    fetch(api + (api.indexOf("?") > -1 ? "&" : "?") + "action=ongkir&berat=" + berat +
+      "&belanja=" + this.subtotalInv() + "&tujuan=" + encodeURIComponent(k.id))
+      .then(r => r.json())
+      .then(res => {
+        const list = (res && res.layanan) || [];
+        this.setState(s => ({ inv: { ...s.inv, layanan: list,
+          ongkirInfo: list.length
+            ? "Berat dihitung " + berat + " gram. Pilih layanannya, ongkir langsung terisi."
+            : (res && res.flat)
+              ? "Kurir tidak menjawab — memakai tarif flat Rp" + Number(res.flat).toLocaleString("id-ID") + "."
+              : "Belum ada layanan untuk tujuan itu." } }));
+        if (!list.length && res && res.flat) this.setInv("ongkir", String(res.flat));
+      })
+      .catch(() => this.setState(s => ({ inv: { ...s.inv, ongkirInfo: "Gagal menghubungi konektor." } })));
+  }
+
+  invBuatManual = () => {
+    if (this.state.sibuk) return;
+    const v = this.state.inv;
+    if (!v.nama.trim()) return this.pesan("Nama pelanggan belum diisi.", "err");
+    if (!v.items.some(i => i.name.trim() && this.angka(i.price) > 0))
+      return this.pesan("Isi minimal satu item dengan harga.", "err");
+
+    this.setState({ sibuk: true, msg: "" });
+    this.kirim({
+      type: "adminInvoiceManual",
+      buyer: { name: v.nama.trim(), email: v.email.trim(), phone: v.hp.trim() },
+      items: v.items.filter(i => i.name.trim()).map(i => ({
+        name: i.name.trim(), qty: Math.max(1, this.angka(i.qty) || 1), price: this.angka(i.price)
+      })),
+      ongkir: this.angka(v.ongkir), diskon: this.angka(v.diskon),
+      alamat: v.alamat.trim(), tujuan: v.tujuan ? v.tujuan.label : "",
+      layanan: v.pilih ? v.pilih.kurir + " " + v.pilih.layanan : "Diatur admin",
+      caraBayar: v.caraBayar.trim() || "Transfer / tunai"
+    }, { aksi: "invManual" })
+      .then(j => {
+        this.setState(s => ({ sibuk: false, inv: { ...s.inv, teks: j.teks, orderId: j.orderId } }));
+        this.pesan("Invoice manual tercatat.", "ok");
+      })
+      .catch(e => { this.setState({ sibuk: false }); this.pesan(e.message, "err"); });
+  };
+
+  cetakInvoice = () => {
+    const t = this.state.inv.teks;
+    if (!t) return;
+    const w = window.open("", "_blank");
+    if (!w) return this.pesan("Izinkan pop-up untuk mencetak.", "err");
+    w.document.write('<!doctype html><meta charset="utf-8"><title>' + this.state.inv.orderId +
+      '</title><style>@page{margin:18mm}body{font:13px/1.7 Georgia,serif;color:#2C3327;white-space:pre-wrap;max-width:150mm}</style>' +
+      t.replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c])));
+    w.document.close();
+    setTimeout(() => { try { w.print(); } catch (e) {} }, 300);
+  };
+
+  invBuat = () => {
+    if (this.state.sibuk) return;
+    const v = this.state.inv;
+    if (!v.nama.trim()) return this.pesan("Nama pelanggan belum diisi.", "err");
+    if (v.email.indexOf("@") < 1) return this.pesan("Email pelanggan belum benar.", "err");
+    if (!v.items.some(i => i.name.trim() && this.angka(i.price) > 0))
+      return this.pesan("Isi minimal satu item dengan harga.", "err");
+
+    this.setState({ sibuk: true, msg: "" });
+    this.kirim({
+      type: "adminInvoice",
+      buyer: { name: v.nama.trim(), email: v.email.trim(), phone: v.hp.trim() },
+      items: v.items.filter(i => i.name.trim()).map(i => ({
+        name: i.name.trim(), qty: Math.max(1, this.angka(i.qty) || 1), price: this.angka(i.price)
+      })),
+      ongkir: this.angka(v.ongkir), diskon: this.angka(v.diskon),
+      alamat: v.alamat.trim(), layanan: "Diatur admin"
+    }, { aksi: "invBayar" })
+      .then(j => {
+        this.setState(s => ({ sibuk: false, inv: { ...s.inv, link: j.link, orderId: j.orderId } }));
+        this.pesan("Tagihan berhasil dibuat.", "ok");
+      })
+      .catch(e => { this.setState({ sibuk: false }); this.pesan(e.message, "err"); });
+  };
+
+  driveId(u) {
+    const m = String(u).match(/(?:\/file\/d\/|[?&]id=|\/d\/)([\w-]{20,})/);
+    return m ? m[1] : "";
+  }
+
+  pratinjau(u) {
+    const s = String(u || "").trim();
+    if (!s) return "";
+    if (/google/.test(s)) {
+      const id = this.driveId(s);
+      return id ? "https://lh3.googleusercontent.com/d/" + id + "=w240" : "";
+    }
+    return /^https?:\/\//i.test(s) ? s : "";
+  }
 
   renderVals() {
-    const ds = this.ds;
-    const fmt = ds ? ds.fmt : (n) => String(n);
-    const short = ds ? ds.short : (n) => String(n);
-    // Jaga-jaga bila browser masih memegang data-source.js versi lama (cache).
-    const TAHAP = (ds && ds.STATUS_BUTIR) || TAHAP_FALLBACK;
-    const th = this.state.theme || (this.props.defaultDark ? 'dark' : 'light');
-    const mode = (ds && ds.CONFIG && ds.CONFIG.MODE) || 'seed';
+    const s = this.state;
+    const H = s.head;
+    const idx = re => H.findIndex(h => re.test(String(h).trim()));
 
-    const utama = this.state.anggaran.filter(r => r.tipe === 'UTAMA');
-    const subOptions = [], semuaOptions = [];
-    utama.forEach(u => {
-      semuaOptions.push({ value: u.id, label: '▍ ' + u.id + ' — ' + u.nama });
-      this.state.anggaran.filter(r => r.parent === u.id).forEach(c => {
-        const label = '\u00A0\u00A0\u00A0\u00A0↳ ' + c.id + ' — ' + c.nama;
-        semuaOptions.push({ value: c.id, label });
-        subOptions.push({ value: c.id, label: c.id + ' — ' + c.nama });
-      });
-    });
+    const cari = s.cari.trim().toLowerCase();
+    const terpakai = cari ? s.rows.filter(r => r.sel.join(" ").toLowerCase().indexOf(cari) > -1) : s.rows;
 
-    const q = this.state.cari.trim().toLowerCase();
-    const butirTampil = this.state.butir.filter(b => {
-      if (this.state.filterKomponen !== 'ALL' && b.komponenId !== this.state.filterKomponen) return false;
-      if (this.state.filterStatus === 'REVISI') {
-        if (!(b.revisi === true || String(b.status).toUpperCase() === 'REVISI')) return false;
-      } else if (this.state.filterStatus !== 'ALL') {
-        const st = String(b.status).toUpperCase() === 'REVISI' ? 'TU' : String(b.status).toUpperCase();
-        if (st !== this.state.filterStatus) return false;
-      }
-      if (q && !((b.nama || '').toLowerCase().includes(q) || (b.id || '').toLowerCase().includes(q) || (b.komponenId || '').toLowerCase().includes(q))) return false;
-      return true;
-    });
+    const iJudul = Math.max(0, idx(/^(nama|judul|platform|no_?pesanan|orderid|kunci|email)$/i));
+    const iSub = idx(/^(harga|status|link|nilai|tipe|segmen)$/i);
+    const iImg = idx(/^(gambar|foto)$/i);
+    const iStok = idx(/^stok$/i);
+    const iTampil = idx(/^tampil$/i);
 
-    const totalHalaman = Math.max(1, Math.ceil(butirTampil.length / this.state.perHalaman));
-    const hal = Math.min(this.state.halaman, totalHalaman);
-    const mulai = (hal - 1) * this.state.perHalaman;
-    const butirHalaman = butirTampil.slice(mulai, mulai + this.state.perHalaman);
+    const warnaMsg = s.msgTipe === "err"
+      ? { bg: "#f5f8e9", br: "#deeccd", fg: "#749949" }
+      : s.msgTipe === "ok" ? { bg: "#F1F7F3", br: "#CFE3D5", fg: "#38624A" }
+      : { bg: "#FBF3EA", br: "#dce7cf", fg: "#6B7760" };
 
-    const norm = (b) => String(b.status).toUpperCase() === 'REVISI' ? 'TU' : String(b.status).toUpperCase();
-    const hitung = {};
-    TAHAP.forEach(t => { hitung[t.key] = this.state.butir.filter(b => norm(b) === t.key).length; });
-    const jumlahRevisi = this.state.butir.filter(b => b.revisi === true || String(b.status).toUpperCase() === 'REVISI').length;
-    const butirSP2D = this.state.butir.filter(b => norm(b) === 'SP2D');
-    const sp2dCount = butirSP2D.length;
-    const nominalSP2D = butirSP2D.reduce((t, b) => t + (b.nominal || 0), 0);
-
-    // ---- Revisi Pagu: daftar baris (utama + subkomponennya) ----
-    const qp = this.state.cariPagu.trim().toLowerCase();
-    const cocok = (r) => !qp || (r.nama || '').toLowerCase().includes(qp) || (r.id || '').toLowerCase().includes(qp);
-    const barisPagu = [];
-    utama.forEach(u => {
-      const anak = this.state.anggaran.filter(r => r.parent === u.id);
-      const relevan = cocok(u) || anak.some(cocok);
-      if (!relevan) return;
-      const buat = (r, sub) => {
-        const d = this.state.draftPagu[r.id] || {};
-        const namaDraf = d.nama !== undefined ? d.nama : r.nama;
-        const paguDraf = d.pagu !== undefined ? d.pagu : new Intl.NumberFormat('id-ID').format(r.pagu);
-        const berubah = namaDraf !== r.nama || Number(this.digits(paguDraf)) !== r.pagu;
-        const sibuk = !!this.state.busyPagu[r.id];
-        return {
-          id: r.id, nama: namaDraf, pagu: paguDraf,
-          weight: sub ? '500' : '700',
-          indent: sub ? '22px' : '0px',
-          bg: sub ? 'var(--surface)' : 'var(--surface-3)',
-          borderCol: sub ? 'var(--line-2)' : 'var(--navy-3)',
-          leftBar: sub ? '3px solid var(--line)' : '5px solid var(--navy)',
-          pad: sub ? '10px 13px' : '13px',
-          kodeBg: sub ? 'var(--surface-3)' : 'var(--navy)',
-          kodeInk: sub ? 'var(--ink-2)' : '#fff',
-          diam: sibuk || !berubah,
-          cursor: berubah && !sibuk ? 'pointer' : 'default',
-          btnBg: berubah ? 'var(--navy)' : 'var(--surface-3)',
-          btnInk: berubah ? '#fff' : 'var(--ink-3)',
-          btnLabel: sibuk ? '...' : (berubah ? 'Simpan' : 'Tersimpan'),
-          onNama: (e) => this.onPaguField(r.id, 'nama', e.target.value),
-          onPagu: (e) => this.onPaguField(r.id, 'pagu', e.target.value),
-          onSimpan: () => berubah && !sibuk && this.simpanPagu(r),
-          onHapus: () => !sibuk && this.hapusKomponen(r)
-        };
-      };
-      barisPagu.push(buat(u, false));
-      anak.filter(c => cocok(u) || cocok(c)).forEach(c => barisPagu.push(buat(c, true)));
-    });
-
-    // ---- Revisi RPD ----
-    const BLN = (ds && ds.BULAN) || ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
-    const draftRpd = this.state.draftRpd.length === 12 ? this.state.draftRpd : new Array(12).fill('');
-    const totalRpd = draftRpd.reduce((t, v) => t + (Number(this.digits(v)) || 0), 0);
-    const rowUtama = this.state.anggaran.find(r => r.id === this.state.rpdKomponen);
-    const paguRpd = rowUtama
-      ? (this.state.anggaran.filter(r => r.parent === rowUtama.id).reduce((t, k) => t + k.pagu, 0) || rowUtama.pagu)
-      : 0;
-    const bulanIni = new Date().getMonth();
-
-    const pagu = utama.reduce((t, u) => {
-      const kids = this.state.anggaran.filter(r => r.parent === u.id);
-      return t + (kids.length ? kids.reduce((x, k) => x + k.pagu, 0) : u.pagu);
-    }, 0);
-    const real = utama.reduce((t, u) => t + this.realisasiOf(u), 0);
-    const tab = (key, label) => ({
-      label, onClick: () => this.setState({ tab: key }),
-      bg: this.state.tab === key ? '#fff' : 'rgba(255,255,255,.08)',
-      color: this.state.tab === key ? 'var(--navy)' : '#fff',
-      border: this.state.tab === key ? '#fff' : 'rgba(255,255,255,.18)'
-    });
+    const judulLayar = s.layar === "set" ? "Pengaturan"
+      : s.layar === "setTab" ? s.tab
+      : s.namaToko;
+    const subJudul = s.layar === "set" ? "Tampilan website & sistem"
+      : s.layar === "setTab" ? "Pengaturan · " + s.tab
+      : "Panel admin";
 
     return {
-      belumMasuk: this.state.siapMasuk && !this.state.sesi,
-      sudahMasuk: !!this.state.sesi,
-      onMasuk: this.onMasuk,
+      perluLogin: !s.masuk,
+      masuk: s.masuk,
+      apiKosong: !/^https?:\/\//i.test(this.api()),
+      pin: s.pin,
+      onPin: e => this.setState({ pin: e.target.value }),
+      onPinKey: e => { if (e.key === "Enter") this.login(); },
+      login: this.login,
+      loginLabel: s.sibuk ? "Memeriksa…" : "Masuk",
       keluar: this.keluar,
-      sesiNama: (this.state.sesi && this.state.sesi.nama) || 'Pengguna',
-      sesiEmail: (this.state.sesi && this.state.sesi.email) || '',
-      sesiInisial: String((this.state.sesi && this.state.sesi.nama) || '?')
-        .trim().split(/\s+/).slice(0, 2).map(x => x.charAt(0).toUpperCase()).join('') || '?',
+      muat: this.muat,
+      namaToko: s.namaToko,
+      judulLayar, subJudul,
+      adaKembali: s.layar !== "ops",
+      adaLogo: s.layar === "ops",
+      kembali: this.kembali,
+      tampilTabs: s.layar === "ops",
+      tanpaTabs: s.layar !== "ops",
+      bukaSetting: this.bukaSetting,
 
-      theme: th,
-      themeIcon: th === 'dark' ? '☀' : '☾',
-      toggleTheme: () => this.setState({ theme: th === 'dark' ? 'light' : 'dark' }),
-      refresh: () => this.load(),
-      statusKoneksi: mode === 'appscript' ? 'TERSAMBUNG · Google Sheets' : 'MODE ' + mode.toUpperCase(),
-      sourceLabel: this.state.source,
-      mode,
-      tabs: [tab('butir', 'Butir Kegiatan & Berkas'), tab('pagu', 'Revisi Pagu'), tab('rpd', 'Revisi RPD')],
-      tabButir: this.state.tab === 'butir',
-      tabPagu: this.state.tab === 'pagu',
-      tabRpd: this.state.tab === 'rpd',
+      msg: s.msg,
+      msgBg: warnaMsg.bg, msgBr: warnaMsg.br, msgFg: warnaMsg.fg,
+      tutupMsg: () => this.setState({ msg: "" }),
+      sibuk: s.sibuk,
+      simpanBg: s.sibuk ? "#b4c3a2" : "#55763F",
+      simpanCur: s.sibuk ? "wait" : "pointer",
+      simpanLabel: s.sibuk ? "Menyimpan…" : (s.barisDraft > 1 ? "Simpan perubahan" : "Tambahkan"),
 
-      subOptions, semuaOptions,
-      tahapOptions: TAHAP.map(t => ({ value: t.key, label: t.urut + '. ' + t.label }))
-        .concat([{ value: 'REVISI', label: '⚑ Perlu revisi (penanda)' }]),
-      formButir: this.state.formButir,
-      editingId: this.state.editingId,
-      busyButir: this.state.busyButir,
-      errButir: this.state.errButir,
-      okButir: this.state.okButir,
-      onFieldButir: this.onFieldButir,
-      submitButir: this.submitButir,
-      resetButir: this.resetButir,
-      cancelEdit: this.cancelEdit,
+      modeSetting: s.layar === "set",
+      modeData: s.layar !== "set" && s.tab !== "Tagihan Khusus" && s.tab !== "Ringkasan",
+      modeInvoice: s.layar === "ops" && s.tab === "Tagihan Khusus",
+      modeStat: s.layar === "ops" && s.tab === "Ringkasan",
 
-      cari: this.state.cari,
-      onCari: (e) => this.setState({ cari: e.target.value, halaman: 1 }),
-      filterKomponen: this.state.filterKomponen,
-      onFilterKomponen: (e) => this.setState({ filterKomponen: e.target.value, halaman: 1 }),
-      filterStatus: this.state.filterStatus,
-      onFilterStatus: (e) => this.setState({ filterStatus: e.target.value, halaman: 1 }),
-      butirTampil: butirHalaman,
-      butirCaption: (butirTampil.length ? (mulai + 1) + '–' + Math.min(mulai + this.state.perHalaman, butirTampil.length) : '0') +
-        ' dari ' + butirTampil.length + ' butir tersaring · total ' + this.state.butir.length,
-      adaPaging: totalHalaman > 1,
-      halamanLabel: 'Halaman ' + hal + ' dari ' + totalHalaman,
-      halamanTabs: Array.from({ length: totalHalaman }, (_, i) => ({
-        label: String(i + 1),
-        onClick: () => this.setState({ halaman: i + 1 }),
-        bg: hal === i + 1 ? 'var(--navy)' : 'var(--surface)',
-        color: hal === i + 1 ? '#fff' : 'var(--ink-2)',
-        border: hal === i + 1 ? 'var(--navy)' : 'var(--line)'
+      statSibuk: s.statSibuk && !s.stat,
+      statAda: !!s.stat,
+      statKosong: !s.statSibuk && !s.stat,
+      statKosongJudul: /tidak dikenal|unknown/i.test(s.statErr || "")
+        ? "Konektor belum diperbarui"
+        : (s.statErr ? "Data belum bisa diambil" : "Belum ada data statistik"),
+      statKosongPesan: /tidak dikenal|unknown/i.test(s.statErr || "")
+        ? "Buka Apps Script → Deploy → Manage deployments → ✏ → New version → Deploy. Setelah itu tekan Muat ulang."
+        : (s.statErr
+            ? s.statErr + ". Periksa koneksi, lalu tekan Muat ulang."
+            : "Buka websitemu sekali dari HP atau komputer, lalu tekan Muat ulang di sini."),
+      statMati: !!(s.stat && s.stat.aktif === false),
+      statMuatUlang: () => this.muatStat(),
+      statRentang: [7, 30, 90].map(h => ({
+        label: h + " hari",
+        pilih: () => this.muatStat(h),
+        bg: s.statHari === h ? "#55763F" : "#fff",
+        fg: s.statHari === h ? "#fff" : "#5A664D",
+        br: s.statHari === h ? "#55763F" : "#cedbc0"
       })),
-      prevDim: hal <= 1 ? '.4' : '1',
-      nextDim: hal >= totalHalaman ? '.4' : '1',
-      onPrev: () => this.setState(s => ({ halaman: Math.max(1, s.halaman - 1) })),
-      onNext: () => this.setState(s => ({ halaman: Math.min(totalHalaman, s.halaman + 1) })),
-      ubahStatus: this.ubahStatus,
-      tandaiRevisi: this.tandaiRevisi,
-      mulaiEdit: this.mulaiEdit,
-      hapusButir: this.hapusButir,
+      statKartu: (() => {
+        const t = s.stat || {};
+        const kunjungan = t.kunjungan || 0;
+        const konv = kunjungan ? ((t.checkout || 0) / kunjungan * 100).toFixed(1) + "%" : "—";
+        return [
+          { label: "Kunjungan", nilai: String(kunjungan), sub: "orang membuka website", bg: "#F2EEF8", fg: "#6B5C93" },
+          { label: "Produk dilihat", nilai: String(t.lihatProduk || 0), sub: "detail atau foto dibuka", bg: "#EDF3F7", fg: "#4E7288" },
+          { label: "Masuk keranjang", nilai: String(t.keranjang || 0), sub: "kali ditambahkan", bg: "#FBF2E8", fg: "#9A6B33" },
+          { label: "Checkout", nilai: String(t.checkout || 0), sub: "menekan tombol bayar", bg: "#F1F7F3", fg: "#38624A" },
+          { label: "Konversi", nilai: konv, sub: "checkout dibagi kunjungan", bg: "#f6f9ec", fg: "#55763F" },
+          { label: "Pesanan masuk", nilai: String(t.pesananLunas || 0), sub: (t.pesananMenunggu || 0) + " menunggu bayar", bg: "#f2f3ed", fg: "#6B7760" }
+        ];
+      })(),
+      statNilai: "Rp" + new Intl.NumberFormat("id-ID").format((s.stat && s.stat.nilai) || 0),
+      statProdukAda: !!(s.stat && s.stat.produk && s.stat.produk.length),
+      statProduk: (() => {
+        const p = (s.stat && s.stat.produk) || [];
+        const maks = p.length ? p[0].jml : 1;
+        return p.map((x, i) => ({
+          no: String(i + 1), nama: x.nama, jml: x.jml + "x",
+          lebar: Math.max(6, Math.round(x.jml / maks * 100)) + "%"
+        }));
+      })(),
+      statTrenAda: !!(s.stat && s.stat.tren && s.stat.tren.length > 1),
+      statTren: (() => {
+        const t = (s.stat && s.stat.tren) || [];
+        const maks = Math.max.apply(null, t.map(x => x.jml).concat([1]));
+        return t.map(x => ({
+          tinggi: Math.max(4, Math.round(x.jml / maks * 100)) + "%",
+          judul: x.tgl + ": " + x.jml + " kunjungan",
+          hari: x.tgl.slice(8)
+        }));
+      })(),
+      shellMode: s.draft ? "editing" : "browsing",
 
-      cariPagu: this.state.cariPagu,
-      onCariPagu: (e) => this.setState({ cariPagu: e.target.value }),
-      barisPagu,
-      adaPesanPagu: !!this.state.pesanPagu,
-      pesanPagu: this.state.pesanPagu,
-      pesanPaguBg: this.state.pesanPaguOk ? 'var(--green-bg)' : 'var(--red-bg)',
-      pesanPaguBorder: this.state.pesanPaguOk ? 'var(--green)' : 'var(--red)',
+      grupSetting: this.GRUP.map(g => ({
+        judul: g.judul,
+        baris: g.baris.map((b, i) => ({
+          label: b.label, desc: b.desc, bg: b.bg, fg: b.fg,
+          d1: b.d1, d2: b.d2 || b.d1,
+          garis: i === 0 ? "transparent" : "#edf0e1",
+          buka: () => this.bukaTabSetting(b.tab)
+        }))
+      })),
 
-      utamaOptions: utama.map(u => ({ value: u.id, label: u.id + ' — ' + u.nama })),
-      rpdKomponen: this.state.rpdKomponen,
-      refRpdKomponen: (el) => { this.elRpd = el; if (el && el.options.length) el.value = this.state.rpdKomponen; },
-      onRpdKomponen: (e) => this.pilihRpd(e.target.value),
-      adaRpdPilihan: !!this.state.rpdKomponen,
-      rpdBulan: BLN.map((b, i) => {
-        const kunci = this.terkunci(i);
+      menu: this.TABS_OPS.map(t => ({
+        label: t, pilih: () => this.gantiTab(t),
+        jml: t === s.tab && s.layar === "ops" && s.rows.length ? String(s.rows.length) : "",
+        bg: t === s.tab && s.layar === "ops" ? "#55763F" : "#fff",
+        fg: t === s.tab && s.layar === "ops" ? "#fff" : "#5A664D",
+        br: t === s.tab && s.layar === "ops" ? "#55763F" : "#cedbc0"
+      })),
+
+      cari: s.cari,
+      onCari: e => this.setCari(e.target.value),
+      baru: this.baru,
+      ringkas: s.sibuk && !s.rows.length ? "Memuat…"
+        : (s.total > terpakai.length
+            ? terpakai.length + " dari " + s.total + " baris"
+            : terpakai.length + " baris" + (cari ? " cocok" : "")) + " di tab " + s.tab,
+
+      adaLagi: !!s.adaLagi,
+      muatLagi: this.muatLagi,
+      muatLagiLabel: s.sibukLagi ? "Memuat…" : "Muat " + this.HAL + " baris berikutnya",
+
+      bisaUrut: this.bisaUrut(),
+      petunjukUrut: "Tahan ikon ⠿ lalu geser untuk mengubah urutan tampil di website.",
+      saatGeser: this.saatGeser,
+      selesaiGeser: this.selesaiGeser,
+
+      daftar: terpakai.slice(0, 600).map((r, ri) => {
+        const judul = String(r.sel[iJudul] || "(kosong)").slice(0, 60);
+        const url = iImg > -1 ? this.pratinjau(r.sel[iImg]) : "";
+        const stok = iStok > -1 ? this.angka(r.sel[iStok]) : null;
+        const tampil = iTampil > -1 ? String(r.sel[iTampil] || "").toLowerCase() : "";
+        let tag = "", tagBg = "#F1F7F3", tagFg = "#38624A";
+        if (/^(tidak|no|false|0)$/.test(tampil)) { tag = "DISEMBUNYIKAN"; tagBg = "#f0f2eb"; tagFg = "#778567"; }
+        else if (stok === 0) { tag = "HABIS"; tagBg = "#f5f8e9"; tagFg = "#749949"; }
+        else if (stok !== null && stok <= 2) { tag = "SISA " + stok; tagBg = "#FDF3E7"; tagFg = "#9A6B33"; }
         return {
-          label: b,
-          value: draftRpd[i],
-          kunci,
-          // Gembok monokrom di dalam kotak isian — tertutup saat terkunci.
-          kunciIkon: kunci ? '🔒' : '🔓',
-          kunciInk: 'var(--ink-2)',
-          kunciOpasitas: kunci ? '1' : '.42',
-          kunciJudul: kunci ? 'Buka kunci ' + b : 'Kunci ' + b + ' agar nilainya tidak berubah',
-          bg: kunci ? 'var(--surface-3)' : 'var(--surface-2)',
-          ink: kunci ? 'var(--ink-2)' : 'var(--ink)',
-          labelColor: i === bulanIni ? 'var(--navy-3)' : 'var(--ink-3)',
-          border: i === bulanIni ? 'var(--navy-3)' : 'var(--line)',
-          onKunci: () => this.toggleKunci(i),
-          onInput: (e) => this.onRpdBulan(i, e.target.value)
+          judul, ri,
+          sub: iSub > -1 ? String(r.sel[iSub] || "—").slice(0, 70) : "baris " + r.baris,
+          buka: () => this.bukaBaris(r),
+          handleShow: this.bisaUrut() ? "flex" : "none",
+          onGeser: e => this.mulaiGeser(ri, e),
+          naik: e => { e.stopPropagation(); this.geserTombol(ri, -1); },
+          turun: e => { e.stopPropagation(); this.geserTombol(ri, 1); },
+          dragOp: s.dragI === ri ? "0.55" : "1",
+          dragSh: s.dragI === ri ? "0 10px 22px rgba(61,44,37,.18)" : "none",
+          bg: r.baris === s.barisDraft ? "#F3F7E9" : "#fff",
+          br: r.baris === s.barisDraft ? "#c8d8b5" : "#e2ead8",
+          thumbBg: url ? "#F1F5E7" : "#F3F7E9",
+          imgRef: el => { if (el && url && el.src !== url) el.src = url; },
+          imgShow: url ? "block" : "none",
+          inisialShow: url ? "none" : "block",
+          inisial: judul.replace(/[^A-Za-z0-9]/g, "").slice(0, 1).toUpperCase() || "•",
+          tag, tagBg, tagFg
         };
       }),
-      rpdStats: [
-        { label: 'Total RPD setahun', value: 'Rp ' + fmt(totalRpd), color: 'var(--ink)' },
-        { label: 'Pagu komponen', value: 'Rp ' + fmt(paguRpd), color: 'var(--ink)' },
-        { label: 'Selisih thd pagu', value: 'Rp ' + fmt(totalRpd - paguRpd), color: totalRpd === paguRpd ? 'var(--green)' : 'var(--amber)' },
-        { label: 'RPD s.d. bulan ini', value: 'Rp ' + fmt(draftRpd.slice(0, bulanIni + 1).reduce((t, v) => t + (Number(this.digits(v)) || 0), 0)), color: 'var(--navy-3)' }
-      ],
-      adaPesanRpd: !!this.state.pesanRpd,
-      pesanRpd: this.state.pesanRpd,
-      pesanRpdBg: this.state.pesanRpdOk ? 'var(--green-bg)' : 'var(--red-bg)',
-      pesanRpdBorder: this.state.pesanRpdOk ? 'var(--green)' : 'var(--red)',
-      busyRpd: this.state.busyRpd,
-      busyRpdOpacity: this.state.busyRpd ? '.7' : '1',
-      labelSimpanRpd: this.state.busyRpd ? 'Menyimpan...' : 'Simpan RPD',
-      simpanRpd: this.simpanRpd,
-      resetRpd: this.resetRpd,
 
-      adaDraf: this.adaDraf(),
-      formKomp: this.state.formKomp,
-      formKompBuka: this.state.formKompBuka,
-      toggleFormKomp: () => this.setState(s => ({ formKompBuka: !s.formKompBuka, pesanPagu: '' })),
-      tambahLabel: this.state.formKompBuka ? '✕ Tutup' : '+ Tambah komponen',
-      tambahBg: this.state.formKompBuka ? 'var(--surface-3)' : 'var(--navy)',
-      tambahInk: this.state.formKompBuka ? 'var(--ink-2)' : '#fff',
-      tambahBorder: this.state.formKompBuka ? 'var(--line)' : 'var(--navy)',
-      kompTipeUtama: this.state.formKomp.tipe === 'UTAMA',
-      kompTipeSub: this.state.formKomp.tipe === 'SUB',
-      onKompId: (e) => this.onKompField('id', e.target.value),
-      onKompNama: (e) => this.onKompField('nama', e.target.value),
-      onKompPagu: (e) => this.onKompField('pagu', e.target.value),
-      onKompParent: (e) => this.onKompField('parent', e.target.value),
-      setTipeUtama: () => this.onKompField('tipe', 'UTAMA'),
-      setTipeSub: () => this.onKompField('tipe', 'SUB'),
-      busyKomp: this.state.busyKomp,
-      labelKomp: this.state.busyKomp ? 'Menyimpan...' : '+ Tambah Komponen',
-      simpanKomponen: this.simpanKomponen,
-      kompTipeUtamaBg: this.state.formKomp.tipe === 'UTAMA' ? 'var(--navy)' : 'var(--surface)',
-      kompTipeUtamaInk: this.state.formKomp.tipe === 'UTAMA' ? '#fff' : 'var(--ink-2)',
-      kompTipeSubBg: this.state.formKomp.tipe === 'SUB' ? 'var(--navy)' : 'var(--surface)',
-      kompTipeSubInk: this.state.formKomp.tipe === 'SUB' ? '#fff' : 'var(--ink-2)',
+      adaDraft: !!s.draft,
+      kosongDraft: !s.draft,
+      kosongJudul: s.rows.length ? "Pilih baris di kiri" : "Belum ada isi",
+      kosongPesan: s.rows.length
+        ? "Klik salah satu baris untuk menyuntingnya, atau tekan Tambah baru."
+        : "Tab " + s.tab + " masih kosong. Tekan Tambah baru untuk mengisi baris pertama.",
+      judulDraft: s.barisDraft > 1 ? "Sunting baris " + s.barisDraft : "Baris baru",
+      bisaHapus: s.barisDraft > 1,
+      hapus: this.hapus,
+      simpan: this.simpan,
+      batal: () => this.setState({ draft: null, msg: "" }),
 
-      riwayatBuka: this.state.riwayatBuka,
-      riwayatIkon: this.state.riwayatBuka ? '▾' : '▸',
-      riwayatMuat: this.state.riwayatMuat,
-      bukaRiwayat: this.bukaRiwayat,
-      riwayat: this.state.riwayat.map(r => ({
-        waktu: r.waktu, aksi: r.aksi, detail: r.detail,
-        pengguna: r.pengguna || '—',
-        warna: /HAPUS|GAGAL/.test(r.aksi) ? 'var(--red)' : (/TAMBAH|ADD/.test(r.aksi) ? 'var(--green)' : 'var(--navy-3)')
+      fields: (s.draft || []).map((v, i) => {
+        const nama = String(H[i] || ("kolom " + (i + 1))).trim();
+        const k = nama.toLowerCase();
+        const isArea = /deskripsi|catatan|alamat|ulasan|keterangan|opsi/.test(k);
+        const isBool = /^(tampil|custom|publish|boleh_promo)$/.test(k);
+        const isImg = /^(gambar|foto)$/.test(k);
+        const num = /^(harga|stok|urutan|berat|qty|jumlah|rating)$/.test(k);
+        const url = isImg ? this.pratinjau(v) : "";
+        return {
+          label: nama.replace(/_/g, " "),
+          val: String(v == null ? "" : v),
+          set: e => this.setSel(i, e.target.value),
+          setYa: () => this.setSel(i, "ya"),
+          setTidak: () => this.setSel(i, "tidak"),
+          isArea, isBool, isPlain: !isArea && !isBool,
+          mode: num ? "numeric" : "text",
+          ph: num ? "0" : "",
+          kelas: isArea || isImg || /link|nilai/.test(k) ? "wide" : "",
+          hint: this.HINT[k] || "",
+          pratinjau: url,
+          imgRef: el => { if (el && url && el.src !== url) el.src = url; },
+          yaBg: /^ya$/i.test(String(v)) ? "#EAF3EC" : "#fff",
+          yaBr: /^ya$/i.test(String(v)) ? "#9CC6A9" : "#e2ead8",
+          yaFg: /^ya$/i.test(String(v)) ? "#38624A" : "#7F8B72",
+          tdBg: /^(tidak|no)$/i.test(String(v)) ? "#f5f8e9" : "#fff",
+          tdBr: /^(tidak|no)$/i.test(String(v)) ? "#c7dcb0" : "#e2ead8",
+          tdFg: /^(tidak|no)$/i.test(String(v)) ? "#749949" : "#7F8B72"
+        };
+      }),
+
+      invNama: s.inv.nama, setInvNama: e => this.setInv("nama", e.target.value),
+      invEmail: s.inv.email, setInvEmail: e => this.setInv("email", e.target.value),
+      invHp: s.inv.hp, setInvHp: e => this.setInv("hp", e.target.value),
+      invAlamat: s.inv.alamat, setInvAlamat: e => this.setInv("alamat", e.target.value),
+      invOngkir: s.inv.ongkir, setInvOngkir: e => this.setInv("ongkir", e.target.value),
+      invDiskon: s.inv.diskon, setInvDiskon: e => this.setInv("diskon", e.target.value),
+      invItems: s.inv.items.map((it, i) => ({
+        name: it.name, qty: it.qty, price: it.price,
+        setName: e => this.setItem(i, "name", e.target.value),
+        setQty: e => this.setItem(i, "qty", e.target.value),
+        setPrice: e => this.setItem(i, "price", e.target.value),
+        hapus: () => this.setState(st => ({
+          inv: { ...st.inv, items: st.inv.items.length > 1 ? st.inv.items.filter((_, n) => n !== i) : st.inv.items }
+        }))
       })),
-      riwayatKosong: !this.state.riwayatMuat && this.state.riwayat.length === 0,
-
-      summary: [
-        { label: 'Total Pagu', value: short(pagu), color: 'var(--ink)' },
-        { label: 'Total Realisasi', value: short(real), color: 'var(--green)' },
-        { label: 'Sisa Anggaran', value: short(pagu - real), color: 'var(--amber)' },
-        { label: 'Butir Kegiatan', value: this.state.butir.length + ' berkas', color: 'var(--ink)' },
-        { label: 'Perlu Revisi', value: jumlahRevisi + ' berkas', color: jumlahRevisi ? 'var(--red)' : 'var(--ink-3)' },
-        { label: 'Sudah SP2D (bukti pencairan)', value: sp2dCount + ' berkas · ' + short(nominalSP2D), color: 'var(--green)' }
-      ],
-      antrian: TAHAP.map(t => ({
-        urut: t.urut, label: t.pendek, jumlah: hitung[t.key] || 0, color: t.color, bg: t.bg,
-        onClick: () => this.setState({ tab: 'butir', filterStatus: t.key, halaman: 1 })
-      })).concat([{
-        urut: '⚑', label: 'Perlu revisi', jumlah: jumlahRevisi, color: 'var(--red)', bg: 'var(--red-bg)',
-        onClick: () => this.setState({ tab: 'butir', filterStatus: 'REVISI', halaman: 1 })
-      }]),
-      sop: [
-        { n: '1', text: 'Tim Kerja menyerahkan berkas → Admin/TU mencatatnya sebagai Butir Kegiatan pada tahapan "Verifikasi Tim TU Pusdatin KP".' },
-        { n: '2', text: 'Setelah lengkap, naikkan ke "Verifikasi Tim Keuangan" dengan tombol panah di tabel.' },
-        { n: '3', text: 'Bila ada kekurangan: klik "⚑ Tandai revisi" dan tulis alasannya. Berkas TETAP di tahap saat itu — revisi hanya penanda, bukan tahap yang wajib dilewati. Setelah diperbaiki, klik "✓ Selesai revisi".' },
-        { n: '4', text: 'Begitu SP2D terbit, set tahap "SP2D" (kartu tersorot hijau). Nominalnya OTOMATIS masuk realisasi — tidak ada input pencairan terpisah.' },
-        { n: '5', text: 'Perubahan nama/besaran anggaran lewat tab "Revisi Pagu"; rencana penarikan bulanan lewat tab "Revisi RPD".' },
-        { n: '6', text: 'Dashboard publik menampilkan semua status ini read-only pada popup tiap komponen.' }
-      ]
+      invTambah: () => this.setState(st => ({ inv: { ...st.inv, items: st.inv.items.concat([{ name: "", qty: "1", price: "" }]) } })),
+      invSubtotal: this.rupiah(this.subtotalInv()),
+      invOngkirTxt: this.rupiah(this.angka(s.inv.ongkir)),
+      invDiskonTxt: this.angka(s.inv.diskon) ? "−" + this.rupiah(this.angka(s.inv.diskon)) : this.rupiah(0),
+      invTotal: this.rupiah(this.totalInv()),
+      invModes: [
+        { key: "online", label: "Pembayaran online", desc: "Link Mayar · QRIS, e-wallet, transfer" },
+        { key: "manual", label: "Invoice manual", desc: "Transfer / tunai · tanpa link bayar" }
+      ].map(m => {
+        const on = (s.inv.mode || "online") === m.key;
+        return {
+          label: m.label, desc: m.desc,
+          bg: on ? "#FDF6EF" : "#fff",
+          color: on ? "#55763F" : "#6B7760",
+          border: on ? "#acc095" : "#e2ead8",
+          pick: () => this.setState(st => ({ inv: { ...st.inv, mode: m.key, link: "", teks: "" } }))
+        };
+      }),
+      invManual: (s.inv.mode || "online") === "manual",
+      invCaraBayar: s.inv.caraBayar,
+      setInvCaraBayar: e => this.setInv("caraBayar", e.target.value),
+      invKotaQ: s.inv.kotaQ,
+      setInvKotaQ: this.setInvKota,
+      invKotaAda: !!(s.inv.kotaList && s.inv.kotaList.length),
+      invKotaList: (s.inv.kotaList || []).map(k => ({
+        label: k.label + (k.pos ? " · " + k.pos : ""),
+        pick: () => this.pilihKota(k)
+      })),
+      invOngkirInfo: s.inv.ongkirInfo || "",
+      invLayananAda: !!(s.inv.layanan && s.inv.layanan.length),
+      invLayanan: (s.inv.layanan || []).map(x => ({
+        nama: x.kurir.toUpperCase() + " · " + x.layanan,
+        etd: x.etd ? "estimasi " + x.etd : "estimasi menyesuaikan kurir",
+        biaya: this.rupiah(x.biaya),
+        pick: () => { this.setInv("ongkir", String(x.biaya)); this.setState(st => ({ inv: { ...st.inv, pilih: x } })); }
+      })),
+      invTeks: s.inv.teks,
+      invWaManual: "https://wa.me/" + String(s.inv.hp || "").replace(/[^0-9]/g, "").replace(/^0/, "62") +
+        "?text=" + encodeURIComponent(s.inv.teks || ""),
+      invSalinTeks: () => { try { navigator.clipboard.writeText(s.inv.teks); this.pesan("Teks invoice disalin.", "ok"); } catch (e) {} },
+      invCetak: this.cetakInvoice,
+      invBuat: (s.inv.mode || "online") === "manual" ? this.invBuatManual : this.invBuat,
+      invLabel: s.sibuk
+        ? "Menyiapkan…"
+        : ((s.inv.mode || "online") === "manual" ? "Buat invoice manual" : "Buat tagihan & kirim"),
+      invLink: s.inv.link,
+      invOrderId: s.inv.orderId,
+      invReset: () => this.setState(st => ({ inv: { mode: "online", caraBayar: "", kotaQ: "", kotaList: [], tujuan: null,
+      layanan: [], pilih: null, ongkirInfo: "", teks: "",
+      nama: "", email: "", hp: "", alamat: "", ongkir: "", diskon: "", link: "", orderId: "",
+      items: [{ name: "", qty: "1", price: "" }], mode: st.inv.mode }, msg: "" })),
+      invSalin: () => {
+        try { navigator.clipboard.writeText(s.inv.link); this.pesan("Link disalin.", "ok"); }
+        catch (e) { this.pesan("Salin manual dari kotak di atas.", "info"); }
+      },
+      invWa: "https://wa.me/" + String(s.inv.hp || "").replace(/[^0-9]/g, "").replace(/^0/, "62") +
+        "?text=" + encodeURIComponent(
+          "Halo " + (s.inv.nama || "Kak") + ", ini tagihan pesananmu di " + s.namaToko +
+          "\n\nNo. Pesanan: " + s.inv.orderId +
+          "\nTotal: " + this.rupiah(this.totalInv()) +
+          "\n\nSilakan bayar lewat link berikut:\n" + s.inv.link +
+          "\n\nTerima kasih ya!")
     };
   }
 }
+
 </script>
 </body>
 </html>
