@@ -19,3 +19,6 @@ HANDOFF.md
 PANDUAN-PUBLISH.md
 *.dc.html
 apps-script-konektor.gs
+
+# Alat bantu lokal (penambal template, dsb) - bukan bagian dari website.
+alat/
