@@ -1,4 +1,21 @@
-# Agent tooling (skills) — lokal, bukan bagian dari website
+# ============================================================
+# Ingat: GitHub Pages menyajikan SELURUH isi repo ini.
+# Apa pun yang di-commit bisa dibuka siapa saja di
+# https://machelcrochet.my.id/<nama-berkas>
+# Jadi yang di bawah ini sengaja TIDAK ikut.
+# ============================================================
+
+# Perkakas skill desain — hanya ada di komputer ini.
 .agents/
 .claude/
 skills-lock.json
+
+# Sumber & dokumen kerja.
+# Bukan bagian dari website, dan isinya menyebut nama berkas panel
+# admin yang sengaja disamarkan, contoh PIN, serta token webhook.
+# Kalau ikut ter-commit, semua itu bisa dibaca publik.
+file acuan untuk dibaca/
+HANDOFF.md
+PANDUAN-PUBLISH.md
+*.dc.html
+apps-script-konektor.gs
