@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B2545; --navy-2:#12325C; --navy-3:#1B4079;
+    --bg:#F3F5FA; --surface:#FFFFFF; --surface-2:#F8FAFC; --surface-3:#EFF3F9;
+    --line:#E3E8F0; --line-2:#EDF1F7; --ink:#0B2545; --ink-2:#4A5A72; --ink-3:#7C8AA0;
+    --green:#0E9F6E; --green-bg:#E6F6EF; --amber:#C98A00; --amber-bg:#FDF4E1;
+    --red:#D93B3B; --red-bg:#FDECEC; --blue:#2563C9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Manrope,Helvetica,Arial,sans-serif;background:var(--bg)}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+  input,select,button{font-size:16px}
+  @media (min-width:640px){input,select,button{font-size:inherit}}
+  @keyframes spinA{to{transform:rotate(360deg)}}
+  @keyframes riseA{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;background:linear-gradient(160deg,var(--navy) 0%,var(--navy-2) 42%,var(--bg) 42.1%,var(--bg) 100%);font-family:Manrope,Helvetica,Arial,sans-serif;color:var(--ink)">
+  <div style="width:100%;max-width:440px;animation:riseA 300ms cubic-bezier(.22,.61,.36,1) both">
+
+    <div style="display:flex;gap:13px;align-items:center;margin-bottom:18px">
+      <div style="width:46px;height:46px;flex:0 0 auto;position:relative;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);display:grid;place-items:center">
+        <span style="font-weight:800;font-size:10px;letter-spacing:.06em;color:rgba(255,255,255,.9)">IMIPAS</span>
+        <img src="logo.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:5px">
+      </div>
+      <div style="min-width:0">
+        <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.66);font-weight:700">Panel Admin</div>
+        <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-.01em;text-wrap:pretty">Dashboard Penyerapan Anggaran</div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 60px -28px rgba(11,37,69,.5);overflow:hidden">
+
+      <div style="display:flex;padding:6px;gap:4px;background:var(--surface-2);border-bottom:1px solid var(--line-2)">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+          <button type="button" onClick="{{ t.onClick }}" style="flex:1;height:40px;border-radius:10px;border:none;background:{{ t.bg }};color:{{ t.color }};font-family:Manrope;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:{{ t.shadow }}">{{ t.label }}</button>
+        </sc-for>
+      </div>
+
+      <div style="padding:22px">
+        <h1 style="margin:0;font-size:19px;font-weight:800;letter-spacing:-.015em;text-wrap:pretty">{{ judul }}</h1>
+        <p style="margin:5px 0 0;font-size:12.5px;line-height:1.6;color:var(--ink-2);text-wrap:pretty">{{ subjudul }}</p>
+
+        <div style="margin-top:18px;display:grid;gap:13px">
+          <sc-for list="{{ fields }}" as="f" hint-placeholder-count="2">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px">{{ f.label }}</label>
+              <input type="{{ f.type }}" value="{{ f.value }}" onInput="{{ f.onInput }}" onKeyDown="{{ f.onKey }}" placeholder="{{ f.placeholder }}" autoComplete="{{ f.autocomplete }}" style="width:100%;height:46px;padding:0 14px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:{{ f.font }};font-size:{{ f.size }};letter-spacing:{{ f.spacing }};outline:none" style-focus="border-color:var(--navy-3);background:var(--surface)">
+              <sc-if value="{{ f.adaHint }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:5px;font-size:11.5px;color:var(--ink-3);text-wrap:pretty">{{ f.hint }}</div>
+              </sc-if>
+            </div>
+          </sc-for>
+
+          <sc-if value="{{ adaPesan }}" hint-placeholder-val="{{ false }}">
+            <div role="alert" style="padding:12px 14px;border-radius:11px;background:{{ pesanBg }};border:1px solid {{ pesanBorder }};font-size:12.5px;line-height:1.55;overflow-wrap:anywhere">{{ pesan }}</div>
+          </sc-if>
+
+          <button type="button" onClick="{{ onSubmit }}" disabled="{{ busy }}" style="height:48px;border-radius:12px;border:none;background:var(--navy);color:#fff;font-family:Manrope;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;opacity:{{ busyOpacity }}" style-hover="filter:brightness(1.12)">
+            <sc-if value="{{ busy }}" hint-placeholder-val="{{ false }}">
+              <span style="width:15px;height:15px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spinA 700ms linear infinite;display:inline-block"></span>
+            </sc-if>
+            <span>{{ tombolLabel }}</span>
+          </button>
+
+          <sc-if value="{{ adaKembali }}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{ onKembali }}" style="height:42px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);font-family:Manrope;font-size:12.5px;font-weight:600;cursor:pointer">{{ kembaliLabel }}</button>
+          </sc-if>
+        </div>
+      </div>
+
+      <div style="padding:14px 22px;background:var(--surface-2);border-top:1px solid var(--line-2)">
+        <div style="font-size:11.5px;line-height:1.65;color:var(--ink-3);text-wrap:pretty">{{ catatanKaki }}</div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;text-align:center">
+      <a href="index.html" style="font-size:12.5px;font-weight:600;color:var(--ink-2)">← Kembali ke dashboard publik</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:520,&quot;height&quot;:700},&quot;onMasuk&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(sesi) =&gt; void&quot;}}">
+/**
+ * AuthGate — layar Login / Daftar akun staf TU.
+ *
+ * ALUR PENDAFTARAN (dua lapis, lihat Code.gs):
+ *   1. Daftar          → kode 6 digit dikirim ke email pendaftar
+ *   2. Verifikasi kode → akun menunggu persetujuan admin
+ *   3. Admin menyetujui lewat tautan di email (atau ubah Status di sheet "Akun")
+ *   4. Login           → dapat token sesi 12 jam
+ *
+ * Props: onMasuk(sesi) — dipanggil setelah login berhasil.
+ */
+class Component extends DCLogic {
+  state = {
+    layar: 'login',           // 'login' | 'daftar' | 'verifikasi'
+    email: '', password: '', nama: '', unit: '', kode: '',
+    busy: false, pesan: '', ok: false
+  };
+
+  set = (k) => (e) => this.setState({ [k]: e.target.value, pesan: '' });
+  enter = (e) => { if (e.key === 'Enter') this.kirim(); };
+
+  async kirim() {
+    if (this.state.busy) return;
+    const ds = this.ds;
+    if (!ds) return;
+    const s = this.state;
+    this.setState({ busy: true, pesan: '' });
+    try {
+      if (s.layar === 'login') {
+        if (!s.email || !s.password) throw new Error('Email dan password wajib diisi.');
+        const j = await ds.loginAkun({ email: s.email.trim(), password: s.password });
+        this.setState({ busy: false });
+        if (this.props.onMasuk) this.props.onMasuk(ds.getSesi() || j);
+        return;
+      }
+      if (s.layar === 'daftar') {
+        if (s.password.length < 8) throw new Error('Password minimal 8 karakter.');
+        const j = await ds.daftarAkun({ email: s.email.trim(), nama: s.nama.trim(), unit: s.unit.trim(), password: s.password });
+        this.setState({ busy: false, layar: j.simulated ? 'login' : 'verifikasi', ok: true, pesan: j.message || 'Pendaftaran terkirim.' });
+        return;
+      }
+      const j = await ds.verifikasiEmail({ email: s.email.trim(), kode: s.kode.trim() });
+      this.setState({ busy: false, layar: 'login', ok: true, kode: '', password: '',
+                      pesan: j.message || 'Email terverifikasi. Menunggu persetujuan admin.' });
+    } catch (e) {
+      this.setState({ busy: false, ok: false, pesan: (e && e.message) || String(e) });
+    }
+  }
+
+  async componentDidMount() {
+    this.ds = await import('./data-source.js');
+    this.forceUpdate();
+  }
+
+  field(key, label, opts) {
+    opts = opts || {};
+    return {
+      label, type: opts.type || 'text',
+      value: this.state[key],
+      placeholder: opts.placeholder || '',
+      autocomplete: opts.autocomplete || 'off',
+      font: opts.mono ? "'IBM Plex Mono',monospace" : 'Manrope',
+      size: opts.big ? '22px' : '14px',
+      spacing: opts.big ? '.34em' : 'normal',
+      adaHint: !!opts.hint,
+      hint: opts.hint || '',
+      onInput: this.set(key),
+      onKey: this.enter
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const mode = this.ds && this.ds.CONFIG ? this.ds.CONFIG.MODE : 'seed';
+    const demo = mode !== 'appscript';
+    const tab = (key, label) => ({
+      label,
+      onClick: () => this.setState({ layar: key, pesan: '' }),
+      bg: s.layar === key || (key === 'daftar' && s.layar === 'verifikasi') ? 'var(--surface)' : 'transparent',
+      color: s.layar === key || (key === 'daftar' && s.layar === 'verifikasi') ? 'var(--navy)' : 'var(--ink-3)',
+      shadow: s.layar === key || (key === 'daftar' && s.layar === 'verifikasi') ? '0 1px 4px rgba(11,37,69,.18)' : 'none'
+    });
+
+    let judul, subjudul, fields, tombolLabel, catatanKaki;
+    if (s.layar === 'login') {
+      judul = 'Masuk Panel Admin';
+      subjudul = 'Gunakan akun staf TU Pusdatin KP yang sudah disetujui admin.';
+      fields = [
+        this.field('email', 'Email dinas', { type: 'email', placeholder: 'nama@imipas.go.id', autocomplete: 'username' }),
+        this.field('password', 'Password', { type: 'password', placeholder: '••••••••', autocomplete: 'current-password' })
+      ];
+      tombolLabel = s.busy ? 'Memeriksa...' : 'Masuk';
+      catatanKaki = 'Sesi berlaku 12 jam dan otomatis berakhir saat tab ditutup. Lupa password? Hubungi admin untuk penyetelan ulang di sheet "Akun".';
+    } else if (s.layar === 'daftar') {
+      judul = 'Daftar Akun Staf TU';
+      subjudul = 'Setelah mendaftar, kode verifikasi dikirim ke email Anda. Akun baru aktif setelah disetujui admin.';
+      fields = [
+        this.field('nama', 'Nama lengkap', { placeholder: 'Nama sesuai kepegawaian' }),
+        this.field('unit', 'Unit / Tim kerja', { placeholder: 'mis. Tim TU Pusdatin KP' }),
+        this.field('email', 'Email dinas', { type: 'email', placeholder: 'nama@imipas.go.id', autocomplete: 'username',
+          hint: 'Hanya email berdomain instansi yang diterima.' }),
+        this.field('password', 'Password', { type: 'password', placeholder: 'minimal 8 karakter', autocomplete: 'new-password' })
+      ];
+      tombolLabel = s.busy ? 'Mengirim...' : 'Daftar & kirim kode';
+      catatanKaki = 'Password disimpan sebagai sidik SHA-256 bergaram, tidak pernah tersimpan apa adanya.';
+    } else {
+      judul = 'Verifikasi Email';
+      subjudul = 'Masukkan 6 digit kode yang dikirim ke ' + (s.email || 'email Anda') + '. Cek juga folder spam.';
+      fields = [this.field('kode', 'Kode verifikasi', { mono: true, big: true, placeholder: '000000' })];
+      tombolLabel = s.busy ? 'Memverifikasi...' : 'Verifikasi';
+      catatanKaki = 'Setelah kode benar, admin menerima email berisi tautan persetujuan. Anda dapat login begitu akun disetujui.';
+    }
+
+    return {
+      tabs: [tab('login', 'Masuk'), tab('daftar', 'Daftar Akun')],
+      judul, subjudul, fields, tombolLabel,
+      catatanKaki: demo ? 'MODE DEMO — login disimulasikan tanpa server. Isi apa saja untuk masuk.' : catatanKaki,
+      adaPesan: !!s.pesan,
+      pesan: s.pesan,
+      pesanBg: s.ok ? 'var(--green-bg)' : 'var(--red-bg)',
+      pesanBorder: s.ok ? 'var(--green)' : 'var(--red)',
+      busy: s.busy,
+      busyOpacity: s.busy ? '.7' : '1',
+      onSubmit: () => this.kirim(),
+      adaKembali: s.layar === 'verifikasi',
+      kembaliLabel: 'Kembali ke halaman masuk',
+      onKembali: () => this.setState({ layar: 'login', pesan: '' })
+    };
+  }
+}
+</script>
+</body>
+</html>

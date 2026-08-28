@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B2545; --navy-3:#1B4079; --surface:#FFFFFF; --surface-2:#F8FAFC; --surface-3:#EFF3F9;
+    --line:#E3E8F0; --line-2:#EDF1F7; --ink:#0B2545; --ink-2:#4A5A72; --ink-3:#7C8AA0;
+    --green:#0E9F6E; --green-bg:#E6F6EF; --amber:#C98A00; --amber-bg:#FDF4E1;
+    --red:#D93B3B; --red-bg:#FDECEC; --blue:#2563C9;
+  }
+  body{margin:0;font-family:Manrope,Helvetica,Arial,sans-serif;background:var(--surface)}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+</style>
+</helmet>
+
+<div style="width:100%;min-width:0;font-family:Manrope,Helvetica,Arial,sans-serif;color:var(--ink)">
+
+  <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:0 0 12px">
+    <div style="min-width:0">
+      <div style="font-size:13.5px;font-weight:800;letter-spacing:-.01em">Butir Kegiatan &amp; Status Berkas</div>
+      <div style="margin-top:2px;font-size:11.5px;color:var(--ink-3);text-wrap:pretty">{{ caption }}</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <sc-for list="{{ tahapan }}" as="t" hint-placeholder-count="3">
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:99px;background:{{ t.bg }};border:1px solid {{ t.color }};font-size:10.5px;font-weight:700;color:{{ t.color }};white-space:nowrap">
+          <span style="font-family:'IBM Plex Mono',monospace">{{ t.urut }}</span>{{ t.pendek }}
+          <span style="font-family:'IBM Plex Mono',monospace;opacity:.75">{{ t.jumlah }}</span>
+        </span>
+      </sc-for>
+      <span style="width:1px;height:18px;background:var(--line)"></span>
+      <span title="Penanda kondisional — bukan tahap wajib" style="display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:99px;background:var(--red-bg);border:1px dashed var(--red);font-size:10.5px;font-weight:700;color:var(--red);white-space:nowrap">
+        ⚑ Perlu revisi <span style="font-family:'IBM Plex Mono',monospace;opacity:.75">{{ jumlahRevisi }}</span>
+      </span>
+    </div>
+  </div>
+
+  <sc-if value="{{ hasItems }}" hint-placeholder-val="{{ true }}">
+    <div style="display:grid;gap:10px;min-width:0">
+      <sc-for list="{{ items }}" as="r" hint-placeholder-count="4">
+        <article style="border:1px solid {{ r.borderColor }};border-left:4px solid {{ r.accent }};border-radius:13px;background:{{ r.rowBg }};padding:14px 16px;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;min-width:0;transition:box-shadow 180ms ease" style-hover="box-shadow:0 6px 18px -12px rgba(11,37,69,.4)">
+
+          <div style="flex:3 1 260px;min-width:0">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--surface-3);color:var(--ink-2);overflow-wrap:anywhere">{{ r.id }}</span>
+              <span style="font-size:10.5px;color:var(--ink-3);white-space:nowrap">diterima {{ r.tanggal }}</span>
+            </div>
+            <div style="margin-top:5px;font-size:13.5px;font-weight:700;line-height:1.4;text-wrap:pretty;overflow-wrap:anywhere">{{ r.nama }}</div>
+
+            <sc-if value="{{ r.revisi }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:7px;display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:9px;background:var(--red-bg);border:1px dashed var(--red)">
+                <span style="color:var(--red);font-size:12px;line-height:1.4;flex:0 0 auto">⚑</span>
+                <div style="min-width:0">
+                  <div style="font-size:11.5px;font-weight:800;color:var(--red)">{{ r.revisiJudul }}</div>
+                  <div style="margin-top:1px;font-size:11.5px;line-height:1.5;color:var(--ink-2);text-wrap:pretty;overflow-wrap:anywhere">{{ r.catatan }}</div>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ r.tanpaRevisi }}" hint-placeholder-val="{{ true }}">
+              <div style="margin-top:3px;font-size:11.5px;line-height:1.5;color:var(--ink-3);text-wrap:pretty;overflow-wrap:anywhere">{{ r.catatan }}</div>
+            </sc-if>
+
+            <sc-if value="{{ r.adaPic }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:8px;display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:8px 10px;border-radius:9px;background:var(--surface-3);border:1px solid var(--line-2)">
+                <span style="width:24px;height:24px;flex:0 0 auto;border-radius:50%;background:var(--navy-3);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:800">{{ r.picInisial }}</span>
+                <span style="min-width:0;flex:1">
+                  <span style="display:block;font-size:12px;font-weight:700;overflow-wrap:anywhere">{{ r.picNama }}</span>
+                  <span style="display:block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-3);overflow-wrap:anywhere">{{ r.picMeta }}</span>
+                </span>
+                <sc-if value="{{ r.adaWa }}" hint-placeholder-val="{{ false }}">
+                  <a href="{{ r.waLink }}" target="_blank" rel="noopener" title="Kirim notifikasi status berkas via WhatsApp" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 11px;border-radius:8px;background:#25D366;color:#08331C;font-size:11.5px;font-weight:800;text-decoration:none;white-space:nowrap;flex:0 0 auto" style-hover="filter:brightness(.95);text-decoration:none">✆ {{ r.waLabel }}</a>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;font-weight:600">{{ r.nominal }}</span>
+              <sc-if value="{{ r.hasBerkas }}" hint-placeholder-val="{{ false }}">
+                <a href="{{ r.berkas }}" target="_blank" rel="noopener" style="font-size:11.5px;font-weight:600">Lihat berkas ↗</a>
+              </sc-if>
+            </div>
+          </div>
+
+          <div style="flex:2 1 210px;min-width:0">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+              <span style="display:inline-block;padding:4px 10px;border-radius:99px;font-size:10.5px;font-weight:800;background:{{ r.statusBg }};color:{{ r.statusColor }};border:1px solid {{ r.statusColor }};text-wrap:pretty">{{ r.statusLabel }}</span>
+              <sc-if value="{{ r.revisi }}" hint-placeholder-val="{{ false }}">
+                <span style="display:inline-block;padding:4px 9px;border-radius:99px;font-size:10.5px;font-weight:800;background:var(--red-bg);color:var(--red);border:1px dashed var(--red);white-space:nowrap">⚑ Revisi</span>
+              </sc-if>
+            </div>
+            <div style="display:flex;align-items:center;margin-top:10px">
+              <sc-for list="{{ r.steps }}" as="s" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;flex:1;min-width:0">
+                  <span title="{{ s.label }}" style="width:17px;height:17px;flex:0 0 auto;border-radius:50%;background:{{ s.dotBg }};border:2px {{ s.dotStyle }} {{ s.dotBorder }};display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;color:{{ s.dotInk }}">{{ s.mark }}</span>
+                  <span style="flex:1;height:2px;background:{{ s.lineColor }};min-width:6px"></span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:6px;font-size:10.5px;color:{{ r.stepColor }};text-wrap:pretty">{{ r.stepText }}</div>
+          </div>
+
+          <div style="flex:1 1 200px;min-width:0;display:flex;flex-direction:column;gap:8px;align-items:stretch">
+            <sc-if value="{{ r.readOnly }}" hint-placeholder-val="{{ true }}">
+              <span style="font-size:11px;color:var(--ink-3);font-style:italic;text-align:right">status read-only</span>
+            </sc-if>
+            <sc-if value="{{ r.editable }}" hint-placeholder-val="{{ false }}">
+              <select ref="{{ r.selRef }}" value="{{ r.status }}" onChange="{{ r.onStatus }}" aria-label="Ubah tahapan berkas" style="width:100%;height:36px;padding:0 10px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:Manrope;font-size:12px;cursor:pointer;outline:none" style-focus="border-color:var(--navy-3)">
+                <sc-for list="{{ r.statusOptions }}" as="o" hint-placeholder-count="3">
+                  <option value="{{ o.value }}">{{ o.label }}</option>
+                </sc-for>
+              </select>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button type="button" onClick="{{ r.onNext }}" title="Naikkan ke tahap berikutnya" style="flex:1 1 auto;height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:Manrope;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="border-color:var(--green);color:var(--green)">{{ r.nextLabel }}</button>
+                <button type="button" onClick="{{ r.onEdit }}" title="Edit butir" style="height:32px;padding:0 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:Manrope;font-size:11.5px;font-weight:600;cursor:pointer" style-hover="border-color:var(--navy-3)">Edit</button>
+                <button type="button" onClick="{{ r.onDelete }}" title="Hapus butir" style="height:32px;width:32px;flex:0 0 auto;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--red);font-family:Manrope;font-size:12px;font-weight:700;cursor:pointer" style-hover="border-color:var(--red);background:var(--red-bg)">✕</button>
+              </div>
+              <button type="button" onClick="{{ r.onRevisi }}" title="Tandai / batalkan penanda revisi" style="height:32px;padding:0 10px;border-radius:8px;border:1px dashed {{ r.revisiBtnColor }};background:{{ r.revisiBtnBg }};color:{{ r.revisiBtnColor }};font-family:Manrope;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" style-hover="filter:brightness(.97)">{{ r.revisiBtnLabel }}</button>
+            </sc-if>
+          </div>
+        </article>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:32px 20px;text-align:center;border:1px dashed var(--line);border-radius:14px;background:var(--surface-2)">
+      <div style="font-size:13.5px;font-weight:700">Belum ada butir kegiatan</div>
+      <div style="margin-top:3px;font-size:12px;color:var(--ink-2);text-wrap:pretty">{{ emptyText }}</div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:900,&quot;height&quot;:560},&quot;items&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;ButirKegiatan[]&quot;},&quot;editable&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;caption&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;emptyText&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Butir kegiatan dicatat oleh Admin/TU saat menerima berkas dari Tim Kerja.&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;onStatus&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(butir, statusBaru: string) =&gt; void&quot;},&quot;onRevisi&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(butir, revisiBaru: boolean) =&gt; void&quot;},&quot;onEdit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(butir) =&gt; void&quot;},&quot;onDelete&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(butir) =&gt; void&quot;}}">
+/**
+ * ActivityTable — daftar "Butir Kegiatan" + tracking berkas.
+ *
+ * MODEL ALUR (penting):
+ *   Tahap linier wajib : 1 Verifikasi Tim TU Pusdatin KP → 2 Verifikasi Tim Keuangan → 3 SP2D
+ *   Revisi             : PENANDA kondisional, bukan tahap. Berkas yang dikembalikan
+ *                        untuk diperbaiki tetap berada di tahapnya dan diberi bendera ⚑.
+ *                        Jadi berkas yang mulus tidak pernah menyentuh status revisi.
+ *
+ * Layout kartu responsif (bukan <table>) supaya tidak pernah terpotong.
+ *
+ * Props:
+ *   items    : {id, komponenId, nama, nominal, tanggal, status, catatan, berkas, revisi}
+ *   editable : true → kontrol admin (select tahap, Naikkan, Edit, Hapus, toggle revisi)
+ *   caption / emptyText
+ *   onStatus(butir, statusBaru) / onRevisi(butir, revisiBaru) / onEdit(butir) / onDelete(butir)
+ *
+ * ⚡ INTEGRASI REAL-TIME: presentational — dorong `items` baru dari parent.
+ */
+const TAHAPAN = [
+  { key: 'TU', urut: 1, label: 'Verifikasi Tim TU Pusdatin KP', pendek: 'Verifikasi TU', color: 'var(--blue)', bg: 'rgba(37,99,201,.12)' },
+  { key: 'KEUANGAN', urut: 2, label: 'Verifikasi Tim Keuangan', pendek: 'Verifikasi Keuangan', color: 'var(--navy-3)', bg: 'rgba(27,64,121,.12)' },
+  { key: 'SP2D', urut: 3, label: 'SP2D', pendek: 'SP2D', color: 'var(--green)', bg: 'var(--green-bg)' }
+];
+const nf = new Intl.NumberFormat('id-ID');
+
+class Component extends DCLogic {
+  sel = {};
+
+  componentDidMount() { this.sinkron(); }
+  componentDidUpdate() { this.sinkron(); }
+  /* <sc-for> menyisipkan <option> setelah commit → nilai <select> disinkronkan ulang. */
+  sinkron() {
+    // <option> disisipkan beberapa frame setelah commit, jadi coba beberapa kali.
+    let sisa = 6;
+    const coba = () => {
+      let belum = false;
+      (this.props.items || []).forEach(b => {
+        const el = this.sel[b.id];
+        if (!el) return;
+        const val = this.tahap(b.status).key;
+        if (!el.options.length) { belum = true; return; }
+        if (el.value !== val) el.value = val;
+      });
+      if (belum && --sisa > 0) requestAnimationFrame(coba);
+    };
+    requestAnimationFrame(coba);
+  }
+
+  tahap(key) {
+    const k = String(key || '').toUpperCase();
+    if (k === 'REVISI') return TAHAPAN[0];              // data lama
+    return TAHAPAN.find(t => t.key === k) || TAHAPAN[0];
+  }
+  punyaRevisi(b) { return b.revisi === true || String(b.status || '').toUpperCase() === 'REVISI'; }
+  tanggal(v) {
+    const d = new Date(String(v || ''));
+    return isNaN(d) ? (v || '—') : d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  renderVals() {
+    const items = this.props.items || [];
+    const editable = !!this.props.editable;
+    const hitung = {};
+    TAHAPAN.forEach(t => { hitung[t.key] = 0; });
+    items.forEach(b => { hitung[this.tahap(b.status).key]++; });
+
+    return {
+      caption: this.props.caption ?? (items.length + ' berkas · alur: Verifikasi TU → Keuangan → SP2D (revisi bila diperlukan)'),
+      emptyText: this.props.emptyText ?? 'Butir kegiatan dicatat oleh Admin/TU saat menerima berkas dari Tim Kerja.',
+      hasItems: items.length > 0,
+      isEmpty: items.length === 0,
+      tahapan: TAHAPAN.map(t => ({ ...t, jumlah: hitung[t.key] })),
+      jumlahRevisi: items.filter(b => this.punyaRevisi(b)).length,
+      items: items.map(b => {
+        const cur = this.tahap(b.status);
+        const idx = TAHAPAN.findIndex(t => t.key === cur.key);
+        const next = TAHAPAN[Math.min(idx + 1, TAHAPAN.length - 1)];
+        const rev = this.punyaRevisi(b);
+        const aksen = rev ? 'var(--red)' : cur.color;
+        return {
+          id: b.id || '—',
+          nama: b.nama || '(tanpa nama)',
+          nominal: 'Rp ' + nf.format(Math.round(b.nominal || 0)),
+          tanggal: this.tanggal(b.tanggal),
+          catatan: b.catatan || (rev ? 'Perlu perbaikan berkas' : '—'),
+          revisi: rev,
+          tanpaRevisi: !rev,
+          revisiJudul: 'Dikembalikan untuk perbaikan di tahap ' + cur.urut + ' — ' + cur.pendek,
+          hasBerkas: !!b.berkas,
+          berkas: b.berkas || '#',
+          rowBg: rev ? 'var(--red-bg)' : (cur.key === 'SP2D' ? 'var(--green-bg)' : 'var(--surface)'),
+          borderColor: rev ? 'var(--red)' : (cur.key === 'SP2D' ? 'var(--green)' : 'var(--line)'),
+          accent: aksen,
+          status: cur.key,
+          statusLabel: cur.urut + '. ' + cur.label,
+          statusColor: cur.color,
+          statusBg: cur.bg,
+          stepColor: rev ? 'var(--red)' : 'var(--ink-3)',
+          stepText: rev
+            ? 'Tertahan di tahap ' + cur.urut + ' sampai perbaikan selesai'
+            : (cur.key === 'SP2D' ? 'Selesai — dana cair' : 'Tahap ' + cur.urut + ' dari 3 · berikutnya: ' + next.pendek),
+          steps: TAHAPAN.map((t, i) => ({
+            label: t.label,
+            mark: i < idx ? '✓' : (i === idx && rev ? '⚑' : String(t.urut)),
+            dotBg: i < idx ? cur.color : (i === idx ? (rev ? 'var(--red)' : cur.color) : 'var(--surface-3)'),
+            dotBorder: i <= idx ? (i === idx && rev ? 'var(--red)' : cur.color) : 'var(--line)',
+            dotStyle: i === idx && rev ? 'dashed' : 'solid',
+            dotInk: i <= idx ? '#fff' : 'var(--ink-3)',
+            lineColor: i < idx ? cur.color : 'var(--line-2)'
+          })),
+          adaPic: !!(b.picNama || b.picWa),
+          picNama: b.picNama || 'PIC belum dicatat',
+          picInisial: (b.picNama || '?').trim().split(/\s+/).slice(0, 2).map(x => x.charAt(0).toUpperCase()).join('') || '?',
+          picMeta: [b.picNip ? 'NIP ' + b.picNip : '', b.picWa ? '+' + b.picWa : ''].filter(Boolean).join(' · ') || 'kontak belum diisi',
+          adaWa: !!b.picWa,
+          waLabel: editable ? 'Beri tahu' : 'WhatsApp',
+          waLink: 'https://wa.me/' + (b.picWa || '') + '?text=' + encodeURIComponent(
+            'Halo ' + (b.picNama || 'Bapak/Ibu') + ', informasi status berkas:\n\n' +
+            '• Nomor dokumen: ' + (b.id || '-') + '\n' +
+            '• Kegiatan: ' + (b.nama || '-') + '\n' +
+            '• Nominal: Rp ' + nf.format(Math.round(b.nominal || 0)) + '\n' +
+            '• Tahap saat ini: ' + cur.urut + '. ' + cur.label + '\n' +
+            (rev ? '• PERLU REVISI: ' + (b.catatan || 'mohon perbaikan berkas') + '\n' : '') +
+            '\nTerima kasih.'
+          ),
+          readOnly: !editable,
+          editable,
+          statusOptions: TAHAPAN.map(t => ({ value: t.key, label: t.urut + '. ' + t.label })),
+          nextLabel: cur.key === 'SP2D' ? 'Selesai' : '→ ' + next.pendek,
+          revisiBtnLabel: rev ? '✓ Selesai revisi' : '⚑ Tandai revisi',
+          revisiBtnColor: rev ? 'var(--green)' : 'var(--red)',
+          revisiBtnBg: rev ? 'var(--green-bg)' : 'var(--surface)',
+          selRef: (el) => {
+            if (el) { this.sel[b.id] = el; if (el.options.length) el.value = cur.key; }
+            else delete this.sel[b.id];
+          },
+          onStatus: (e) => this.props.onStatus && this.props.onStatus(b, e.target.value),
+          onNext: () => this.props.onStatus && cur.key !== 'SP2D' && this.props.onStatus(b, next.key),
+          onRevisi: () => this.props.onRevisi && this.props.onRevisi(b, !rev),
+          onEdit: () => this.props.onEdit && this.props.onEdit(b),
+          onDelete: () => this.props.onDelete && this.props.onDelete(b)
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

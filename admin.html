@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B2545; --navy-2:#12325C; --navy-3:#1B4079;
+    --bg:#F3F5FA; --surface:#FFFFFF; --surface-2:#F8FAFC; --surface-3:#EFF3F9;
+    --line:#E3E8F0; --line-2:#EDF1F7;
+    --ink:#0B2545; --ink-2:#4A5A72; --ink-3:#7C8AA0;
+    --green:#0E9F6E; --green-bg:#E6F6EF;
+    --amber:#C98A00; --amber-bg:#FDF4E1;
+    --red:#D93B3B;  --red-bg:#FDECEC;
+    --blue:#2563C9;
+    --shadow:0 1px 2px rgba(11,37,69,.05), 0 8px 24px -12px rgba(11,37,69,.18);
+  }
+  [data-theme="dark"]{
+    --navy:#0A1526; --navy-2:#0F1F36; --navy-3:#1B3A66;
+    --bg:#070E1A; --surface:#0E1A2D; --surface-2:#13233B; --surface-3:#17293F;
+    --line:#1E3050; --line-2:#182842;
+    --ink:#EAF1FB; --ink-2:#A6B6CE; --ink-3:#7488A4;
+    --green:#34D399; --green-bg:#0C2A22;
+    --amber:#FBBF24; --amber-bg:#2C2310;
+    --red:#F87171;  --red-bg:#301617;
+    --blue:#60A5FA;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{color:var(--navy-3);text-decoration:underline}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  input,select,button,textarea{font-size:16px}          /* cegah zoom otomatis iOS */
+  @media (min-width:640px){input,select,button,textarea{font-size:inherit}}
+  @media (max-width:640px){
+    .om-pad{padding-left:14px !important;padding-right:14px !important}
+    .om-tap{min-height:44px}
+  }
+</style>
+</helmet>
+
+<sc-if value="{{ belumMasuk }}" hint-placeholder-val="{{ true }}">
+  <dc-import name="AuthGate" on-masuk="{{ onMasuk }}" hint-size="100%,100vh"></dc-import>
+</sc-if>
+
+<sc-if value="{{ sudahMasuk }}" hint-placeholder-val="{{ false }}">
+<div data-theme="{{ theme }}" style="min-height:100vh;color:var(--ink);background:var(--bg)">
+
+  <header style="position:sticky;top:0;z-index:20;background:linear-gradient(180deg,var(--navy) 0%,var(--navy-2) 100%);color:#fff">
+    <div class="om-pad" style="max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:14px">
+      <div style="display:flex;align-items:center;gap:14px;flex:1 1 300px;min-width:0">
+        <div title="Logo Kementerian Imigrasi dan Pemasyarakatan" style="width:50px;height:50px;flex:0 0 auto;position:relative;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);display:grid;place-items:center">
+          <span style="font-weight:800;font-size:11px;letter-spacing:.06em;color:rgba(255,255,255,.9)">IMIPAS</span>
+          <img src="logo.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:5px">
+        </div>
+        <div style="min-width:0">
+          <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.62);font-weight:600">Panel Admin / TU · Internal</div>
+          <h1 style="margin:2px 0 0;font-size:18px;font-weight:800;letter-spacing:-.01em">Pengelolaan Berkas, Pagu &amp; RPD</h1>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.86)">{{ statusKoneksi }}</span>
+        <a href="index.html" style="height:38px;display:inline-flex;align-items:center;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-size:13px;font-weight:600" style-hover="background:rgba(255,255,255,.18);text-decoration:none;color:#fff">← Dashboard</a>
+        <button type="button" onClick="{{ refresh }}" style="height:38px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-family:Manrope;font-size:13px;font-weight:600;cursor:pointer">Muat Ulang</button>
+        <span title="{{ sesiEmail }}" style="display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 12px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);max-width:210px">
+          <span style="width:22px;height:22px;flex:0 0 auto;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:9.5px;font-weight:800">{{ sesiInisial }}</span>
+          <span style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ sesiNama }}</span>
+        </span>
+        <button type="button" onClick="{{ keluar }}" title="Keluar dari sesi" style="height:38px;padding:0 13px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-family:Manrope;font-size:13px;font-weight:600;cursor:pointer">Keluar</button>
+        <button type="button" onClick="{{ toggleTheme }}" title="Mode gelap / terang" style="width:38px;height:38px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;font-size:14px;cursor:pointer">{{ themeIcon }}</button>
+      </div>
+    </div>
+    <div style="max-width:1280px;margin:0 auto;padding:0 24px 14px;display:flex;gap:8px;flex-wrap:wrap">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+        <button type="button" onClick="{{ t.onClick }}" style="height:40px;flex:0 0 auto;padding:0 15px;border-radius:10px;border:1px solid {{ t.border }};background:{{ t.bg }};color:{{ t.color }};font-family:Manrope;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 180ms ease">{{ t.label }}</button>
+      </sc-for>
+    </div>
+  </header>
+
+  <main class="om-pad" style="max-width:1280px;margin:0 auto;padding:20px 24px 28px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+
+    <section style="flex:1 1 620px;min-width:0;display:flex;flex-direction:column;gap:20px">
+
+      <sc-if value="{{ tabButir }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:fadeUp 280ms ease both">
+          <dc-import name="AdminControls" komponen-options="{{ subOptions }}" values="{{ formButir }}" editing-id="{{ editingId }}" busy="{{ busyButir }}" error="{{ errButir }}" success="{{ okButir }}" mode="{{ mode }}" on-field="{{ onFieldButir }}" on-submit="{{ submitButir }}" on-reset="{{ resetButir }}" on-cancel="{{ cancelEdit }}" hint-size="100%,520px"></dc-import>
+        </div>
+
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px;animation:fadeUp 320ms ease both">
+          <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="min-width:0">
+              <h2 style="margin:0;font-size:15.5px;font-weight:800;letter-spacing:-.01em">Kelola Tahapan Berkas</h2>
+              <div style="margin-top:2px;font-size:12.5px;color:var(--ink-2);text-wrap:pretty">3 tahap wajib: Verifikasi TU → Keuangan → SP2D. Revisi adalah penanda kondisional, bukan tahap.</div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <input type="search" value="{{ cari }}" onInput="{{ onCari }}" placeholder="Cari butir..." style="height:38px;width:180px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:Manrope;font-size:13px;outline:none" style-focus="border-color:var(--navy-3)">
+              <select value="{{ filterKomponen }}" onChange="{{ onFilterKomponen }}" aria-label="Filter subkomponen" style="height:38px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:Manrope;font-size:13px;cursor:pointer;outline:none;max-width:230px">
+                <option value="ALL">Semua subkomponen</option>
+                <sc-for list="{{ subOptions }}" as="k" hint-placeholder-count="5">
+                  <option value="{{ k.value }}">{{ k.label }}</option>
+                </sc-for>
+              </select>
+              <select value="{{ filterStatus }}" onChange="{{ onFilterStatus }}" aria-label="Filter tahapan" style="height:38px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:Manrope;font-size:13px;cursor:pointer;outline:none">
+                <option value="ALL">Semua tahapan</option>
+                <sc-for list="{{ tahapOptions }}" as="s" hint-placeholder-count="4">
+                  <option value="{{ s.value }}">{{ s.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+          </div>
+          <dc-import name="ActivityTable" items="{{ butirTampil }}" editable="{{ true }}" caption="{{ butirCaption }}" empty-text="Belum ada butir yang cocok dengan filter." on-status="{{ ubahStatus }}" on-revisi="{{ tandaiRevisi }}" on-edit="{{ mulaiEdit }}" on-delete="{{ hapusButir }}" hint-size="100%,420px"></dc-import>
+
+          <sc-if value="{{ adaPaging }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between">
+              <span style="font-size:12px;color:var(--ink-3)">{{ halamanLabel }}</span>
+              <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+                <button type="button" onClick="{{ onPrev }}" class="om-tap" style="height:36px;min-width:44px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font-family:Manrope;font-size:13px;font-weight:700;cursor:pointer;opacity:{{ prevDim }}">‹</button>
+                <sc-for list="{{ halamanTabs }}" as="h" hint-placeholder-count="3">
+                  <button type="button" onClick="{{ h.onClick }}" class="om-tap" style="height:36px;min-width:38px;border-radius:9px;border:1px solid {{ h.border }};background:{{ h.bg }};color:{{ h.color }};font-family:Manrope;font-size:13px;font-weight:700;cursor:pointer">{{ h.label }}</button>
+                </sc-for>
+                <button type="button" onClick="{{ onNext }}" class="om-tap" style="height:36px;min-width:44px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font-family:Manrope;font-size:13px;font-weight:700;cursor:pointer;opacity:{{ nextDim }}">›</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabPagu }}" hint-placeholder-val="{{ false }}">
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;animation:fadeUp 280ms ease both">
+          <div style="padding:18px 20px;border-bottom:1px solid var(--line-2);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
+            <div style="min-width:0">
+              <h2 style="margin:0;font-size:15.5px;font-weight:800;letter-spacing:-.01em">Revisi Pagu Anggaran</h2>
+              <div style="margin-top:3px;font-size:12.5px;color:var(--ink-2);text-wrap:pretty">Ubah nama dan besaran pagu komponen utama maupun subkomponen. Tersimpan ke sheet "Anggaran".</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <input type="search" value="{{ cariPagu }}" onInput="{{ onCariPagu }}" placeholder="Cari komponen..." style="height:40px;width:180px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:Manrope;font-size:13px;outline:none" style-focus="border-color:var(--navy-3)">
+              <button type="button" onClick="{{ toggleFormKomp }}" title="Tambah komponen atau subkomponen baru" style="height:40px;padding:0 14px;border-radius:10px;border:1px solid {{ tambahBorder }};background:{{ tambahBg }};color:{{ tambahInk }};font-family:Manrope;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap">{{ tambahLabel }}</button>
+            </div>
+          </div>
+          <sc-if value="{{ formKompBuka }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:14px 16px;border-bottom:1px solid var(--line-2);background:var(--surface-2);animation:fadeUp 200ms ease both">
+              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                <div style="display:flex;gap:3px;padding:3px;border-radius:9px;background:var(--surface-3);border:1px solid var(--line-2);flex:0 0 auto">
+                  <button type="button" onClick="{{ setTipeUtama }}" style="height:34px;padding:0 12px;border-radius:7px;border:none;background:{{ kompTipeUtamaBg }};color:{{ kompTipeUtamaInk }};font-family:Manrope;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Komponen</button>
+                  <button type="button" onClick="{{ setTipeSub }}" style="height:34px;padding:0 12px;border-radius:7px;border:none;background:{{ kompTipeSubBg }};color:{{ kompTipeSubInk }};font-family:Manrope;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Subkomponen</button>
+                </div>
+                <sc-if value="{{ kompTipeSub }}" hint-placeholder-val="{{ true }}">
+                  <select value="{{ formKomp.parent }}" onChange="{{ onKompParent }}" aria-label="Komponen utama induk" style="flex:1 1 190px;min-width:0;height:40px;padding:0 11px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:Manrope;font-size:12.5px;cursor:pointer;outline:none">
+                    <option value="">Induk…</option>
+                    <sc-for list="{{ utamaOptions }}" as="k" hint-placeholder-count="10">
+                      <option value="{{ k.value }}">{{ k.label }}</option>
+                    </sc-for>
+                  </select>
+                </sc-if>
+                <input type="text" value="{{ formKomp.id }}" onInput="{{ onKompId }}" placeholder="Kode" style="flex:1 1 130px;min-width:0;height:40px;padding:0 11px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12px;outline:none" style-focus="border-color:var(--navy-3)">
+                <input type="text" value="{{ formKomp.nama }}" onInput="{{ onKompNama }}" placeholder="Nama kegiatan" style="flex:2 1 180px;min-width:0;height:40px;padding:0 11px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:Manrope;font-size:12.5px;outline:none" style-focus="border-color:var(--navy-3)">
+                <input type="text" inputmode="numeric" value="{{ formKomp.pagu }}" onInput="{{ onKompPagu }}" placeholder="Pagu" style="flex:1 1 130px;min-width:0;height:40px;padding:0 11px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;text-align:right;outline:none" style-focus="border-color:var(--navy-3)">
+                <button type="button" onClick="{{ simpanKomponen }}" disabled="{{ busyKomp }}" style="height:40px;padding:0 16px;flex:0 0 auto;border-radius:9px;border:none;background:var(--navy);color:#fff;font-family:Manrope;font-size:12.5px;font-weight:700;cursor:pointer">{{ labelKomp }}</button>
+              </div>
+            </div>
+          </sc-if>
+          <div style="padding:16px;display:grid;gap:8px;max-height:640px;overflow-y:auto">
+            <sc-for list="{{ barisPagu }}" as="r" hint-placeholder-count="6">
+              <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:{{ r.pad }};border-radius:12px;background:{{ r.bg }};border:1px solid {{ r.borderCol }};border-left:{{ r.leftBar }};margin-left:{{ r.indent }}">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;background:{{ r.kodeBg }};color:{{ r.kodeInk }};flex:0 0 auto;letter-spacing:.02em">{{ r.id }}</span>
+                <input type="text" value="{{ r.nama }}" onInput="{{ r.onNama }}" aria-label="Nama kegiatan" style="flex:2 1 220px;min-width:0;height:38px;padding:0 12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:Manrope;font-size:13px;font-weight:{{ r.weight }};outline:none" style-focus="border-color:var(--navy-3)">
+                <div style="flex:1 1 170px;min-width:0;position:relative">
+                  <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-3)">Rp</span>
+                  <input type="text" inputmode="numeric" value="{{ r.pagu }}" onInput="{{ r.onPagu }}" aria-label="Pagu anggaran" style="width:100%;height:38px;padding:0 11px 0 34px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;text-align:right;outline:none" style-focus="border-color:var(--navy-3)">
+                </div>
+                <div style="display:flex;gap:6px;flex:0 0 auto">
+                  <button type="button" onClick="{{ r.onSimpan }}" disabled="{{ r.diam }}" style="height:42px;padding:0 14px;border-radius:9px;border:none;background:{{ r.btnBg }};color:{{ r.btnInk }};font-family:Manrope;font-size:12.5px;font-weight:700;cursor:{{ r.cursor }}">{{ r.btnLabel }}</button>
+                  <button type="button" onClick="{{ r.onHapus }}" title="Hapus komponen ini" style="height:42px;width:42px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--red);font-family:Manrope;font-size:13px;font-weight:700;cursor:pointer" style-hover="border-color:var(--red);background:var(--red-bg)">✕</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ adaPesanPagu }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:0 16px 16px">
+              <div role="status" style="padding:12px 14px;border-radius:11px;background:{{ pesanPaguBg }};border:1px solid {{ pesanPaguBorder }};font-size:12.5px;overflow-wrap:anywhere">{{ pesanPagu }}</div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabRpd }}" hint-placeholder-val="{{ false }}">
+        <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;animation:fadeUp 280ms ease both">
+          <div style="padding:18px 20px;border-bottom:1px solid var(--line-2)">
+            <h2 style="margin:0;font-size:15.5px;font-weight:800;letter-spacing:-.01em">Revisi RPD (Rencana Penarikan Dana)</h2>
+            <div style="margin-top:3px;font-size:12.5px;color:var(--ink-2);text-wrap:pretty">Rencana penarikan per bulan untuk tiap komponen utama. Dipakai dashboard sebagai pembanding penyerapan bulanan.</div>
+          </div>
+          <div style="padding:18px;display:grid;gap:16px">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px">Komponen Utama</label>
+              <select ref="{{ refRpdKomponen }}" value="{{ rpdKomponen }}" onChange="{{ onRpdKomponen }}" style="width:100%;height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:Manrope;font-size:13px;cursor:pointer;outline:none" style-focus="border-color:var(--navy-3)">
+                <option value="">— Pilih komponen utama —</option>
+                <sc-for list="{{ utamaOptions }}" as="k" hint-placeholder-count="10">
+                  <option value="{{ k.value }}">{{ k.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+
+            <sc-if value="{{ adaRpdPilihan }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;gap:14px">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(122px,1fr));gap:10px">
+                  <sc-for list="{{ rpdBulan }}" as="m" hint-placeholder-count="12">
+                    <div>
+                      <label style="display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:{{ m.labelColor }};margin-bottom:5px">{{ m.label }}</label>
+                      <div style="position:relative">
+                        <button type="button" onClick="{{ m.onKunci }}" title="{{ m.kunciJudul }}" aria-label="{{ m.kunciJudul }}" style="position:absolute;left:5px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:7px;border:none;background:transparent;color:{{ m.kunciInk }};font-size:12px;line-height:1;cursor:pointer;padding:0;opacity:{{ m.kunciOpasitas }}" style-hover="background:var(--line-2)">{{ m.kunciIkon }}</button>
+                        <input type="text" inputmode="numeric" value="{{ m.value }}" onInput="{{ m.onInput }}" readOnly="{{ m.kunci }}" placeholder="0" style="width:100%;height:42px;padding:0 10px 0 38px;border-radius:9px;border:1px solid {{ m.border }};background:{{ m.bg }};color:{{ m.ink }};font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;text-align:right;outline:none" style-focus="border-color:var(--navy-3)">
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:13px 15px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line-2)">
+                  <sc-for list="{{ rpdStats }}" as="s" hint-placeholder-count="4">
+                    <div>
+                      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-3)">{{ s.label }}</div>
+                      <div style="margin-top:3px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:{{ s.color }}">{{ s.value }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <sc-if value="{{ adaPesanRpd }}" hint-placeholder-val="{{ false }}">
+                  <div role="status" style="padding:12px 14px;border-radius:11px;background:{{ pesanRpdBg }};border:1px solid {{ pesanRpdBorder }};font-size:12.5px;overflow-wrap:anywhere">{{ pesanRpd }}</div>
+                </sc-if>
+
+                <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+                  <button type="button" onClick="{{ simpanRpd }}" disabled="{{ busyRpd }}" style="height:44px;padding:0 20px;border-radius:11px;border:none;background:var(--navy);color:#fff;font-family:Manrope;font-size:13.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:9px;opacity:{{ busyRpdOpacity }}">
+                    <sc-if value="{{ busyRpd }}" hint-placeholder-val="{{ false }}">
+                      <span style="width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin 700ms linear infinite;display:inline-block"></span>
+                    </sc-if>
+                    <span>{{ labelSimpanRpd }}</span>
+                  </button>
+                  <button type="button" onClick="{{ resetRpd }}" style="height:44px;padding:0 16px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:Manrope;font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:var(--navy-3)">Kembalikan</button>
+                  <span style="font-size:11.5px;color:var(--ink-3);text-wrap:pretty">Tersimpan ke sheet "RPD" — dashboard langsung memakai angka baru.</span>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+    </section>
+
+    <section style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:20px">
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px">
+        <h2 style="margin:0 0 4px;font-size:15px;font-weight:800;letter-spacing:-.01em">Ringkasan</h2>
+        <div style="font-size:12px;color:var(--ink-2);margin-bottom:13px">Sumber: {{ sourceLabel }}</div>
+        <div style="display:grid;gap:9px">
+          <sc-for list="{{ summary }}" as="s" hint-placeholder-count="5">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 12px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line-2)">
+              <span style="font-size:12.5px;color:var(--ink-2)">{{ s.label }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:{{ s.color }}">{{ s.value }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <sc-if value="{{ adaDraf }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:13px 15px;border-radius:14px;background:var(--amber-bg);border:1px solid var(--amber);display:flex;gap:10px;align-items:flex-start">
+          <span style="font-size:14px;line-height:1.3;flex:0 0 auto">🔒</span>
+          <span style="min-width:0;font-size:12px;line-height:1.55;color:var(--ink-2);text-wrap:pretty"><strong style="color:var(--amber)">Pembaruan otomatis dijeda.</strong> Ada isian yang belum disimpan — data di layar tidak akan tertimpa sampai Anda menyimpan atau membersihkan isian.</span>
+        </div>
+      </sc-if>
+
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden">
+        <button type="button" onClick="{{ bukaRiwayat }}" style="display:flex;width:100%;gap:10px;align-items:center;padding:16px 18px;background:transparent;border:none;cursor:pointer;text-align:left;font-family:Manrope" style-hover="background:var(--surface-2)">
+          <span style="flex:1;min-width:0;font-size:15px;font-weight:800;letter-spacing:-.01em;color:var(--ink)">Riwayat Perubahan</span>
+          <span style="font-size:12px;color:var(--ink-3)">{{ riwayatIkon }}</span>
+        </button>
+        <sc-if value="{{ riwayatBuka }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:0 18px 16px">
+            <sc-if value="{{ riwayatMuat }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:16px 0;font-size:12.5px;color:var(--ink-3)">Memuat riwayat…</div>
+            </sc-if>
+            <sc-if value="{{ riwayatKosong }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:14px;border-radius:11px;background:var(--surface-2);border:1px dashed var(--line);font-size:12px;line-height:1.55;color:var(--ink-2);text-wrap:pretty">Belum ada catatan. Riwayat tersimpan di sheet <strong>Log</strong> dan hanya tersedia saat terhubung ke Google Sheets.</div>
+            </sc-if>
+            <div style="display:grid;gap:7px;max-height:320px;overflow-y:auto">
+              <sc-for list="{{ riwayat }}" as="r" hint-placeholder-count="5">
+                <div style="padding:9px 11px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line-2)">
+                  <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">
+                    <span style="font-size:10.5px;font-weight:800;letter-spacing:.04em;color:{{ r.warna }}">{{ r.aksi }}</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-3)">{{ r.waktu }}</span>
+                  </div>
+                  <div style="margin-top:2px;font-size:11.5px;line-height:1.5;color:var(--ink-2);overflow-wrap:anywhere">{{ r.detail }}</div>
+                  <div style="margin-top:1px;font-size:10.5px;color:var(--ink-3);overflow-wrap:anywhere">{{ r.pengguna }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px">
+        <h2 style="margin:0 0 12px;font-size:15px;font-weight:800;letter-spacing:-.01em">Antrian Berkas per Tahapan</h2>
+        <div style="display:grid;gap:9px">
+          <sc-for list="{{ antrian }}" as="a" hint-placeholder-count="4">
+            <button type="button" onClick="{{ a.onClick }}" style="display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border-radius:11px;background:{{ a.bg }};border:1px solid {{ a.color }};cursor:pointer;font-family:Manrope" style-hover="transform:translateX(2px)">
+              <span style="width:18px;height:18px;flex:0 0 auto;border-radius:6px;background:{{ a.color }};color:#fff;display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:700">{{ a.urut }}</span>
+              <span style="flex:1;font-size:12.5px;font-weight:700;color:{{ a.color }};min-width:0">{{ a.label }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:{{ a.color }}">{{ a.jumlah }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="margin-top:12px;font-size:11.5px;line-height:1.6;color:var(--ink-3);text-wrap:pretty">Klik salah satu tahapan untuk memfilter tabel di sebelah kiri.</div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px">
+        <h2 style="margin:0 0 10px;font-size:15px;font-weight:800;letter-spacing:-.01em">Alur Kerja (SOP)</h2>
+        <div style="display:grid;gap:9px">
+          <sc-for list="{{ sop }}" as="s" hint-placeholder-count="5">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:20px;height:20px;flex:0 0 auto;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:10.5px">{{ s.n }}</span>
+              <span style="font-size:12.5px;line-height:1.55;color:var(--ink-2);min-width:0;overflow-wrap:anywhere;text-wrap:pretty">{{ s.text }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="background:var(--navy);color:rgba(255,255,255,.7)">
+    <div style="max-width:1280px;margin:0 auto;padding:22px 24px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;font-size:12px">
+      <span>Panel Admin Internal — Dashboard Monitoring Penyerapan Anggaran</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px">Konfigurasi: data-source.js · Backend: Code.gs</span>
+    </div>
+  </footer>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultDark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Tampilan&quot;}}">
+/**
+ * Admin Panel (internal) — kelola Butir Kegiatan, Revisi Pagu, dan Revisi RPD.
+ *
+ * TIDAK ADA input pencairan terpisah: begitu sebuah butir ditetapkan ke tahap
+ * SP2D, nominalnya otomatis tercatat sebagai realisasi pada monitoring anggaran.
+ * Tidak ada gerbang token: sistem internal, pembatasan dilakukan di level hosting.
+ *
+ * Komponen modular yang dipakai:
+ *   AdminControls.dc.html  → form input/edit butir
+ *   ActivityTable.dc.html  → tabel butir + kontrol tahapan berkas
+ *
+ * ⚡ INTEGRASI API: seluruh panggilan ada di data-source.js
+ *   fetchAll() / addButir() / updateButir() / deleteButir() / updateAnggaran() / updateRPD()
+ *   Untuk real-time, ganti polling (POLL_MS) dengan langganan WebSocket dan
+ *   panggil this.terapkan(data) setiap ada pesan masuk.
+ */
+const TAHAP_FALLBACK = [
+  { key: 'TU', urut: 1, label: 'Verifikasi Tim TU Pusdatin KP', pendek: 'Verifikasi TU', color: 'var(--blue)', bg: 'rgba(37,99,201,.12)' },
+  { key: 'KEUANGAN', urut: 2, label: 'Verifikasi Tim Keuangan', pendek: 'Verifikasi Keuangan', color: 'var(--navy-3)', bg: 'rgba(27,64,121,.12)' },
+  { key: 'SP2D', urut: 3, label: 'SP2D', pendek: 'SP2D', color: 'var(--green)', bg: 'var(--green-bg)' }
+];
+const POLL_MS = 60000;
+const KOSONG = { id: '', komponen: '', nama: '', nominal: '', tanggal: new Date().toISOString().slice(0, 10), status: 'TU', catatan: '', berkas: '', revisi: false, picNama: '', picNip: '', picWa: '' };
+
+class Component extends DCLogic {
+  state = {
+    sesi: null, siapMasuk: false,
+    anggaran: [], pencairan: [], butir: [], source: '—', loading: true,
+    tab: 'butir', theme: null,
+    formButir: { ...KOSONG }, editingId: '', busyButir: false, errButir: '', okButir: '',
+    cari: '', filterKomponen: 'ALL', filterStatus: 'ALL',
+    rpd: [],
+    halaman: 1, perHalaman: 6,
+    kunciRpd: {},               // {komponenId: {bulanIndex: true}} — sel RPD yang dikunci
+    riwayat: [], riwayatBuka: false, riwayatMuat: false,
+    formKomp: { id: '', tipe: 'SUB', parent: '', nama: '', pagu: '' }, busyKomp: false, formKompBuka: false,
+    cariPagu: '', draftPagu: {}, busyPagu: {}, pesanPagu: '', pesanPaguOk: true,
+    rpdKomponen: '', draftRpd: [], busyRpd: false, pesanRpd: '', pesanRpdOk: true
+  };
+
+  async componentDidMount() {
+    this.ds = await import('./data-source.js');
+    // Pulihkan sesi yang masih berlaku (mis. setelah refresh halaman).
+    const sesi = this.ds.sesiAktif() ? this.ds.getSesi() : null;
+    this.setState({ sesi, siapMasuk: true });
+    if (!sesi) return;
+    await this.load();
+    // Auto-refresh DIJEDA selama ada perubahan yang belum disimpan, supaya
+    // ketikan admin tidak tertimpa data dari server (permintaan "fitur kunci").
+    if (POLL_MS > 0) this.timer = setInterval(() => { if (!this.adaDraf()) this.load(true); }, POLL_MS);
+  }
+  componentWillUnmount() { clearInterval(this.timer); }
+
+  onMasuk = async (sesi) => {
+    this.setState({ sesi });
+    await this.load();
+    if (POLL_MS > 0 && !this.timer) this.timer = setInterval(() => { if (!this.adaDraf()) this.load(true); }, POLL_MS);
+  };
+
+  keluar = async () => {
+    if (this.adaDraf() && typeof window !== 'undefined' &&
+        !window.confirm('Ada isian yang belum disimpan. Tetap keluar?')) return;
+    clearInterval(this.timer); this.timer = null;
+    await this.ds.logoutAkun();
+    this.setState({ sesi: null, butir: [], anggaran: [], draftPagu: {}, formButir: { ...KOSONG } });
+  };
+
+  /* Opsi <select> disisipkan setelah commit — sinkronkan nilainya tiap render. */
+  componentDidUpdate() {
+    requestAnimationFrame(() => {
+      if (this.elRpd && this.elRpd.options.length && this.elRpd.value !== this.state.rpdKomponen) {
+        this.elRpd.value = this.state.rpdKomponen;
+      }
+    });
+  }
+
+  /** Ada perubahan yang belum disimpan? Dipakai untuk menahan auto-refresh. */
+  adaDraf() {
+    const s = this.state;
+    if (Object.keys(s.draftPagu).some(k => s.draftPagu[k])) return true;
+    if (s.rpdKomponen && s.draftRpd.length === 12) {
+      const asli = this.rpdAwal(s.rpdKomponen);
+      if (s.draftRpd.some((v, i) => (Number(this.digits(v)) || 0) !== asli[i])) return true;
+    }
+    const f = s.formButir;
+    if (f && (f.id || f.nama || f.nominal || f.catatan || f.berkas || f.picNama || f.picWa)) return true;
+    const k = s.formKomp;
+    if (k && (k.id || k.nama || k.pagu)) return true;
+    return false;
+  }
+
+  terapkan(d) {
+    this.setState({ anggaran: d.anggaran, pencairan: d.pencairan, butir: d.butir || [], rpd: d.rpd || [], source: d.source, loading: false });
+  }
+  async load(silent) {
+    if (!silent) this.setState({ loading: true });
+    try { this.terapkan(await this.ds.fetchAll()); }
+    catch (e) {
+      const f = this.ds.seedFallback();
+      this.terapkan({ ...f, source: f.source + ' (fetch gagal: ' + e.message + ')' });
+    }
+  }
+
+  digits = (v) => String(v || '').replace(/\D/g, '');
+  rupiahInput = (v) => { const d = this.digits(v); return d ? new Intl.NumberFormat('id-ID').format(Number(d)) : ''; };
+
+  sub(id) { return this.state.anggaran.find(r => r.id === id) || null; }
+  realisasiOf(row) {
+    if (!row) return 0;
+    if (row.tipe === 'SUB') return row.realisasi;
+    const kids = this.state.anggaran.filter(r => r.parent === row.id);
+    return kids.length ? kids.reduce((t, k) => t + k.realisasi, 0) : row.realisasi;
+  }
+
+  /* ------------------------- Butir Kegiatan (CRUD) ------------------------ */
+  onFieldButir = (field, value) => {
+    const v = field === 'nominal' ? this.rupiahInput(value) : value;   // 'revisi' datang sebagai boolean
+    this.setState(s => ({ formButir: { ...s.formButir, [field]: v }, errButir: '', okButir: '' }));
+  };
+
+  submitButir = async () => {
+    const f = this.state.formButir;
+    const nominal = Number(this.digits(f.nominal)) || 0;
+    const nomor = (f.id || '').trim();
+    if (!nomor) return this.setState({ errButir: 'Nomor dokumen/surat wajib diisi (contoh: DIK-KU.03.01-23).', okButir: '' });
+    if (!this.state.editingId && this.state.butir.some(b => b.id === nomor)) {
+      return this.setState({ errButir: 'Nomor dokumen "' + nomor + '" sudah dipakai butir lain.', okButir: '' });
+    }
+    if (!f.komponen) return this.setState({ errButir: 'Subkomponen wajib dipilih.', okButir: '' });
+    if (!f.nama.trim()) return this.setState({ errButir: 'Nama butir kegiatan wajib diisi.', okButir: '' });
+    if (nominal <= 0) return this.setState({ errButir: 'Nominal harus lebih besar dari 0.', okButir: '' });
+    if (f.berkas && !/^https?:\/\//i.test(f.berkas)) return this.setState({ errButir: 'Link berkas harus diawali http:// atau https://', okButir: '' });
+    if (!(f.picNama || '').trim()) return this.setState({ errButir: 'Nama PIC wajib diisi.', okButir: '' });
+    if (!(f.picWa || '').trim()) return this.setState({ errButir: 'Nomor WhatsApp PIC wajib diisi.', okButir: '' });
+    if (this.digits(f.picWa).length < 9) return this.setState({ errButir: 'Nomor WhatsApp PIC tidak valid.', okButir: '' });
+    if (f.revisi && !f.catatan.trim()) return this.setState({ errButir: 'Butir bertanda revisi wajib menyertakan alasan pada kolom Catatan.', okButir: '' });
+
+    this.setState({ busyButir: true, errButir: '', okButir: '' });
+    const payload = {
+      ID_Butir: nomor,
+      ID_Komponen: f.komponen, Nama_Butir: f.nama.trim(), Nominal: nominal,
+      Tanggal_Terima: f.tanggal, Status: f.status, Catatan: f.catatan.trim(),
+      Link_Berkas: f.berkas.trim(), Revisi: !!f.revisi,
+      PIC_Nama: (f.picNama || '').trim(), PIC_NIP: (f.picNip || '').trim(), PIC_WA: (f.picWa || '').trim()
+    };
+    try {
+      let pesan;
+      if (this.state.editingId) {
+        const res = await this.ds.updateButir({ ID_Butir: this.state.editingId, ...payload });
+        this.setState(s => ({
+          butir: s.butir.map(b => b.id === s.editingId ? {
+            ...b, komponenId: f.komponen, nama: payload.Nama_Butir, nominal, tanggal: f.tanggal,
+            status: f.status, catatan: payload.Catatan, berkas: payload.Link_Berkas, revisi: !!f.revisi,
+            picNama: payload.PIC_Nama, picNip: payload.PIC_NIP, picWa: this.ds.normalWa(payload.PIC_WA)
+          } : b)
+        }));
+        pesan = res.simulated ? 'Simulasi: perubahan ' + this.state.editingId + ' hanya tampil lokal.' : 'Butir ' + this.state.editingId + ' diperbarui.';
+      } else {
+        const res = await this.ds.addButir(payload);
+        const baru = {
+          id: res.id || nomor, komponenId: f.komponen, nama: payload.Nama_Butir, nominal, tanggal: f.tanggal,
+          status: f.status, catatan: payload.Catatan, berkas: payload.Link_Berkas, revisi: !!f.revisi,
+          picNama: payload.PIC_Nama, picNip: payload.PIC_NIP, picWa: this.ds.normalWa(payload.PIC_WA)
+        };
+        this.setState(s => ({ butir: [baru].concat(s.butir) }));
+        pesan = res.simulated
+          ? 'Simulasi (MODE seed): butir ' + baru.id + ' tampil lokal, belum tersimpan ke Sheets.'
+          : 'Butir ' + baru.id + ' tersimpan ke sheet "Butir".';
+      }
+      this.setState({ busyButir: false, editingId: '', okButir: pesan, formButir: { ...KOSONG, komponen: f.komponen } });
+      if (this.ds.CONFIG.MODE === 'appscript') setTimeout(() => this.load(true), 1200);
+    } catch (e) {
+      this.setState({ busyButir: false, errButir: 'Gagal menyimpan: ' + ((e && e.message) || e) });
+    }
+  };
+
+  mulaiEdit = (b) => {
+    this.setState({
+      tab: 'butir', editingId: b.id, errButir: '', okButir: '',
+      formButir: {
+        id: b.id, komponen: b.komponenId, nama: b.nama, nominal: new Intl.NumberFormat('id-ID').format(b.nominal || 0),
+        tanggal: b.tanggal || KOSONG.tanggal,
+        status: String(b.status || 'TU').toUpperCase() === 'REVISI' ? 'TU' : (b.status || 'TU'),
+        catatan: b.catatan || '', berkas: b.berkas || '',
+        revisi: b.revisi === true || String(b.status || '').toUpperCase() === 'REVISI',
+        picNama: b.picNama || '', picNip: b.picNip || '', picWa: b.picWa || ''
+      }
+    });
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  cancelEdit = () => this.setState({ editingId: '', formButir: { ...KOSONG }, errButir: '', okButir: '' });
+  resetButir = () => this.setState({ formButir: { ...KOSONG }, errButir: '', okButir: '' });
+
+  ubahStatus = async (b, statusBaru) => {
+    if (!statusBaru || statusBaru === b.status) return;
+    this.setState(s => ({ butir: s.butir.map(x => x.id === b.id ? { ...x, status: statusBaru } : x), okButir: '', errButir: '' }));
+    try {
+      const res = await this.ds.updateButir({ ID_Butir: b.id, Status: statusBaru });
+      this.setState({ okButir: (res.simulated ? 'Simulasi: ' : '') + b.id + ' → tahapan ' + statusBaru + '.' });
+    } catch (e) {
+      this.setState({ butir: this.state.butir.map(x => x.id === b.id ? { ...x, status: b.status } : x), errButir: 'Gagal memperbarui tahapan: ' + e.message });
+    }
+  };
+
+  /** Toggle penanda revisi (bukan perubahan tahap). */
+  tandaiRevisi = async (b, revisiBaru) => {
+    if (revisiBaru && !(b.catatan || '').trim()) {
+      const alasan = typeof window !== 'undefined' ? window.prompt('Alasan revisi untuk ' + b.id + ':', '') : '';
+      if (alasan === null) return;
+      b = { ...b, catatan: (alasan || '').trim() };
+    }
+    const sebelum = this.state.butir;
+    this.setState(s => ({
+      butir: s.butir.map(x => x.id === b.id ? { ...x, revisi: revisiBaru, catatan: b.catatan } : x),
+      okButir: '', errButir: ''
+    }));
+    try {
+      const res = await this.ds.updateButir({ ID_Butir: b.id, Revisi: revisiBaru, Catatan: b.catatan || '' });
+      this.setState({ okButir: (res.simulated ? 'Simulasi: ' : '') + b.id + (revisiBaru ? ' ditandai perlu revisi.' : ' — penanda revisi dilepas.') });
+    } catch (e) {
+      this.setState({ butir: sebelum, errButir: 'Gagal memperbarui penanda revisi: ' + e.message });
+    }
+  };
+
+  hapusButir = async (b) => {
+    if (typeof window !== 'undefined' && !window.confirm('Hapus butir ' + b.id + ' — ' + b.nama + '?')) return;
+    const sebelum = this.state.butir;
+    this.setState(s => ({ butir: s.butir.filter(x => x.id !== b.id), okButir: '', errButir: '' }));
+    try {
+      const res = await this.ds.deleteButir(b.id);
+      this.setState({ okButir: (res.simulated ? 'Simulasi: ' : '') + 'Butir ' + b.id + ' dihapus.' });
+    } catch (e) {
+      this.setState({ butir: sebelum, errButir: 'Gagal menghapus: ' + e.message });
+    }
+  };
+
+  /* ----------------------------- Riwayat ---------------------------------- */
+  bukaRiwayat = async () => {
+    const buka = !this.state.riwayatBuka;
+    this.setState({ riwayatBuka: buka });
+    if (!buka || this.state.riwayat.length) return;
+    this.setState({ riwayatMuat: true });
+    try {
+      const log = await this.ds.fetchLog(40);
+      this.setState({ riwayat: log, riwayatMuat: false });
+    } catch (e) {
+      this.setState({ riwayatMuat: false, riwayat: [{ waktu: '—', aksi: 'GAGAL', detail: e.message, pengguna: '' }] });
+    }
+  };
+
+  /* ------------------- Tambah / hapus komponen (Revisi Pagu) --------------- */
+  onKompField = (field, value) => {
+    const v = field === 'pagu' ? this.rupiahInput(value) : value;
+    this.setState(s => ({ formKomp: { ...s.formKomp, [field]: v }, pesanPagu: '' }));
+  };
+
+  simpanKomponen = async () => {
+    const f = this.state.formKomp;
+    const id = (f.id || '').trim();
+    const pagu = Number(this.digits(f.pagu)) || 0;
+    if (!id) return this.setState({ pesanPagu: 'Kode komponen wajib diisi (mis. 051.0P atau 051.0A-521212).', pesanPaguOk: false });
+    if (this.state.anggaran.some(r => r.id === id)) return this.setState({ pesanPagu: 'Kode "' + id + '" sudah dipakai.', pesanPaguOk: false });
+    if (!(f.nama || '').trim()) return this.setState({ pesanPagu: 'Nama kegiatan wajib diisi.', pesanPaguOk: false });
+    if (f.tipe === 'SUB' && !f.parent) return this.setState({ pesanPagu: 'Pilih komponen utama induk untuk subkomponen.', pesanPaguOk: false });
+
+    this.setState({ busyKomp: true, pesanPagu: '' });
+    try {
+      const res = await this.ds.addKomponen({
+        ID_Komponen: id, Tipe: f.tipe, Parent_ID: f.tipe === 'SUB' ? f.parent : '',
+        Nama_Kegiatan: f.nama.trim(), Pagu_Anggaran: pagu
+      });
+      this.setState(s => ({
+        busyKomp: false,
+        anggaran: s.anggaran.concat([{ id, tipe: f.tipe, parent: f.tipe === 'SUB' ? f.parent : '', nama: f.nama.trim(), pagu, realisasi: 0 }]),
+        formKomp: { id: '', tipe: f.tipe, parent: f.parent, nama: '', pagu: '' },
+        pesanPagu: (res.simulated ? 'Simulasi: ' : '') + 'Komponen ' + id + ' ditambahkan.',
+        pesanPaguOk: true
+      }));
+      if (!res.simulated) setTimeout(() => this.load(true), 1200);
+    } catch (e) {
+      this.setState({ busyKomp: false, pesanPagu: 'Gagal menambah: ' + e.message, pesanPaguOk: false });
+    }
+  };
+
+  hapusKomponen = async (row) => {
+    const anak = this.state.anggaran.filter(r => r.parent === row.id).length;
+    const konfirm = 'Hapus ' + row.id + ' — ' + row.nama + '?' +
+      (anak ? '\n\n' + anak + ' subkomponen di bawahnya ikut terhapus.' : '');
+    if (typeof window !== 'undefined' && !window.confirm(konfirm)) return;
+    this.setState(s => ({ busyPagu: { ...s.busyPagu, [row.id]: true }, pesanPagu: '' }));
+    try {
+      const res = await this.ds.deleteKomponen(row.id);
+      this.setState(s => ({
+        anggaran: s.anggaran.filter(r => r.id !== row.id && r.parent !== row.id),
+        busyPagu: { ...s.busyPagu, [row.id]: false },
+        pesanPagu: (res.simulated ? 'Simulasi: ' : '') + 'Komponen ' + row.id + ' dihapus.',
+        pesanPaguOk: true
+      }));
+      if (!res.simulated) setTimeout(() => this.load(true), 1200);
+    } catch (e) {
+      this.setState(s => ({ busyPagu: { ...s.busyPagu, [row.id]: false }, pesanPagu: 'Gagal menghapus: ' + e.message, pesanPaguOk: false }));
+    }
+  };
+
+  /* --------------------------- Revisi Pagu -------------------------------- */
+  onPaguField = (id, field, value) => {
+    const v = field === 'pagu' ? this.rupiahInput(value) : value;
+    this.setState(s => ({ draftPagu: { ...s.draftPagu, [id]: { ...(s.draftPagu[id] || {}), [field]: v } }, pesanPagu: '' }));
+  };
+
+  simpanPagu = async (row) => {
+    const d = this.state.draftPagu[row.id] || {};
+    const nama = (d.nama !== undefined ? d.nama : row.nama).trim();
+    const pagu = Number(this.digits(d.pagu !== undefined ? d.pagu : String(row.pagu)));
+    if (!nama) return this.setState({ pesanPagu: 'Nama kegiatan tidak boleh kosong.', pesanPaguOk: false });
+    if (!(pagu >= 0)) return this.setState({ pesanPagu: 'Pagu harus berupa angka.', pesanPaguOk: false });
+
+    this.setState(s => ({ busyPagu: { ...s.busyPagu, [row.id]: true }, pesanPagu: '' }));
+    try {
+      const res = await this.ds.updateAnggaran({ ID_Komponen: row.id, Nama_Kegiatan: nama, Pagu_Anggaran: pagu });
+      this.setState(s => ({
+        anggaran: s.anggaran.map(r => r.id === row.id ? { ...r, nama, pagu } : r),
+        draftPagu: { ...s.draftPagu, [row.id]: undefined },
+        busyPagu: { ...s.busyPagu, [row.id]: false },
+        pesanPagu: (res.simulated ? 'Simulasi: ' : '') + row.id + ' diperbarui — pagu Rp ' + this.ds.fmt(pagu) + '.',
+        pesanPaguOk: true
+      }));
+      if (!res.simulated) setTimeout(() => this.load(true), 1200);
+    } catch (e) {
+      this.setState(s => ({ busyPagu: { ...s.busyPagu, [row.id]: false }, pesanPagu: 'Gagal menyimpan: ' + e.message, pesanPaguOk: false }));
+    }
+  };
+
+  /* ---------------------------- Revisi RPD -------------------------------- */
+  rpdAwal(id) {
+    const r = (this.state.rpd || []).find(x => x.komponenId === id);
+    return r ? r.bulan.slice() : new Array(12).fill(0);
+  }
+  pilihRpd = (id) => {
+    this.setState({
+      rpdKomponen: id,
+      draftRpd: id ? this.rpdAwal(id).map(v => (v ? new Intl.NumberFormat('id-ID').format(v) : '')) : [],
+      pesanRpd: ''
+    });
+  };
+  toggleKunci = (i) => {
+    const id = this.state.rpdKomponen;
+    this.setState(s => {
+      const k = { ...(s.kunciRpd[id] || {}) };
+      k[i] = !k[i];
+      return { kunciRpd: { ...s.kunciRpd, [id]: k } };
+    });
+  };
+  terkunci(i) {
+    const k = this.state.kunciRpd[this.state.rpdKomponen] || {};
+    return !!k[i];
+  }
+
+  onRpdBulan = (i, value) => {
+    if (this.terkunci(i)) return;      // sel terkunci: abaikan perubahan
+    this.setState(s => {
+      const d = s.draftRpd.slice();
+      d[i] = this.rupiahInput(value);
+      return { draftRpd: d, pesanRpd: '' };
+    });
+  };
+  resetRpd = () => this.pilihRpd(this.state.rpdKomponen);
+
+  simpanRpd = async () => {
+    const id = this.state.rpdKomponen;
+    if (!id) return;
+    const angka = this.state.draftRpd.map(v => Number(this.digits(v)) || 0);
+    this.setState({ busyRpd: true, pesanRpd: '' });
+    try {
+      const res = await this.ds.updateRPD({ ID_Komponen: id, Bulan: angka });
+      const total = angka.reduce((t, v) => t + v, 0);
+      this.setState(s => {
+        const ada = (s.rpd || []).some(x => x.komponenId === id);
+        const baris = { komponenId: id, bulan: angka, total };
+        return {
+          busyRpd: false,
+          rpd: ada ? s.rpd.map(x => x.komponenId === id ? baris : x) : (s.rpd || []).concat([baris]),
+          pesanRpd: (res.simulated ? 'Simulasi: ' : '') + 'RPD ' + id + ' tersimpan — total setahun Rp ' + this.ds.fmt(total) + '.',
+          pesanRpdOk: true
+        };
+      });
+      if (!res.simulated) setTimeout(() => this.load(true), 1200);
+    } catch (e) {
+      this.setState({ busyRpd: false, pesanRpd: 'Gagal menyimpan: ' + e.message, pesanRpdOk: false });
+    }
+  };
+
+  renderVals() {
+    const ds = this.ds;
+    const fmt = ds ? ds.fmt : (n) => String(n);
+    const short = ds ? ds.short : (n) => String(n);
+    // Jaga-jaga bila browser masih memegang data-source.js versi lama (cache).
+    const TAHAP = (ds && ds.STATUS_BUTIR) || TAHAP_FALLBACK;
+    const th = this.state.theme || (this.props.defaultDark ? 'dark' : 'light');
+    const mode = (ds && ds.CONFIG && ds.CONFIG.MODE) || 'seed';
+
+    const utama = this.state.anggaran.filter(r => r.tipe === 'UTAMA');
+    const subOptions = [], semuaOptions = [];
+    utama.forEach(u => {
+      semuaOptions.push({ value: u.id, label: '▍ ' + u.id + ' — ' + u.nama });
+      this.state.anggaran.filter(r => r.parent === u.id).forEach(c => {
+        const label = '\u00A0\u00A0\u00A0\u00A0↳ ' + c.id + ' — ' + c.nama;
+        semuaOptions.push({ value: c.id, label });
+        subOptions.push({ value: c.id, label: c.id + ' — ' + c.nama });
+      });
+    });
+
+    const q = this.state.cari.trim().toLowerCase();
+    const butirTampil = this.state.butir.filter(b => {
+      if (this.state.filterKomponen !== 'ALL' && b.komponenId !== this.state.filterKomponen) return false;
+      if (this.state.filterStatus === 'REVISI') {
+        if (!(b.revisi === true || String(b.status).toUpperCase() === 'REVISI')) return false;
+      } else if (this.state.filterStatus !== 'ALL') {
+        const st = String(b.status).toUpperCase() === 'REVISI' ? 'TU' : String(b.status).toUpperCase();
+        if (st !== this.state.filterStatus) return false;
+      }
+      if (q && !((b.nama || '').toLowerCase().includes(q) || (b.id || '').toLowerCase().includes(q) || (b.komponenId || '').toLowerCase().includes(q))) return false;
+      return true;
+    });
+
+    const totalHalaman = Math.max(1, Math.ceil(butirTampil.length / this.state.perHalaman));
+    const hal = Math.min(this.state.halaman, totalHalaman);
+    const mulai = (hal - 1) * this.state.perHalaman;
+    const butirHalaman = butirTampil.slice(mulai, mulai + this.state.perHalaman);
+
+    const norm = (b) => String(b.status).toUpperCase() === 'REVISI' ? 'TU' : String(b.status).toUpperCase();
+    const hitung = {};
+    TAHAP.forEach(t => { hitung[t.key] = this.state.butir.filter(b => norm(b) === t.key).length; });
+    const jumlahRevisi = this.state.butir.filter(b => b.revisi === true || String(b.status).toUpperCase() === 'REVISI').length;
+    const butirSP2D = this.state.butir.filter(b => norm(b) === 'SP2D');
+    const sp2dCount = butirSP2D.length;
+    const nominalSP2D = butirSP2D.reduce((t, b) => t + (b.nominal || 0), 0);
+
+    // ---- Revisi Pagu: daftar baris (utama + subkomponennya) ----
+    const qp = this.state.cariPagu.trim().toLowerCase();
+    const cocok = (r) => !qp || (r.nama || '').toLowerCase().includes(qp) || (r.id || '').toLowerCase().includes(qp);
+    const barisPagu = [];
+    utama.forEach(u => {
+      const anak = this.state.anggaran.filter(r => r.parent === u.id);
+      const relevan = cocok(u) || anak.some(cocok);
+      if (!relevan) return;
+      const buat = (r, sub) => {
+        const d = this.state.draftPagu[r.id] || {};
+        const namaDraf = d.nama !== undefined ? d.nama : r.nama;
+        const paguDraf = d.pagu !== undefined ? d.pagu : new Intl.NumberFormat('id-ID').format(r.pagu);
+        const berubah = namaDraf !== r.nama || Number(this.digits(paguDraf)) !== r.pagu;
+        const sibuk = !!this.state.busyPagu[r.id];
+        return {
+          id: r.id, nama: namaDraf, pagu: paguDraf,
+          weight: sub ? '500' : '700',
+          indent: sub ? '22px' : '0px',
+          bg: sub ? 'var(--surface)' : 'var(--surface-3)',
+          borderCol: sub ? 'var(--line-2)' : 'var(--navy-3)',
+          leftBar: sub ? '3px solid var(--line)' : '5px solid var(--navy)',
+          pad: sub ? '10px 13px' : '13px',
+          kodeBg: sub ? 'var(--surface-3)' : 'var(--navy)',
+          kodeInk: sub ? 'var(--ink-2)' : '#fff',
+          diam: sibuk || !berubah,
+          cursor: berubah && !sibuk ? 'pointer' : 'default',
+          btnBg: berubah ? 'var(--navy)' : 'var(--surface-3)',
+          btnInk: berubah ? '#fff' : 'var(--ink-3)',
+          btnLabel: sibuk ? '...' : (berubah ? 'Simpan' : 'Tersimpan'),
+          onNama: (e) => this.onPaguField(r.id, 'nama', e.target.value),
+          onPagu: (e) => this.onPaguField(r.id, 'pagu', e.target.value),
+          onSimpan: () => berubah && !sibuk && this.simpanPagu(r),
+          onHapus: () => !sibuk && this.hapusKomponen(r)
+        };
+      };
+      barisPagu.push(buat(u, false));
+      anak.filter(c => cocok(u) || cocok(c)).forEach(c => barisPagu.push(buat(c, true)));
+    });
+
+    // ---- Revisi RPD ----
+    const BLN = (ds && ds.BULAN) || ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+    const draftRpd = this.state.draftRpd.length === 12 ? this.state.draftRpd : new Array(12).fill('');
+    const totalRpd = draftRpd.reduce((t, v) => t + (Number(this.digits(v)) || 0), 0);
+    const rowUtama = this.state.anggaran.find(r => r.id === this.state.rpdKomponen);
+    const paguRpd = rowUtama
+      ? (this.state.anggaran.filter(r => r.parent === rowUtama.id).reduce((t, k) => t + k.pagu, 0) || rowUtama.pagu)
+      : 0;
+    const bulanIni = new Date().getMonth();
+
+    const pagu = utama.reduce((t, u) => {
+      const kids = this.state.anggaran.filter(r => r.parent === u.id);
+      return t + (kids.length ? kids.reduce((x, k) => x + k.pagu, 0) : u.pagu);
+    }, 0);
+    const real = utama.reduce((t, u) => t + this.realisasiOf(u), 0);
+    const tab = (key, label) => ({
+      label, onClick: () => this.setState({ tab: key }),
+      bg: this.state.tab === key ? '#fff' : 'rgba(255,255,255,.08)',
+      color: this.state.tab === key ? 'var(--navy)' : '#fff',
+      border: this.state.tab === key ? '#fff' : 'rgba(255,255,255,.18)'
+    });
+
+    return {
+      belumMasuk: this.state.siapMasuk && !this.state.sesi,
+      sudahMasuk: !!this.state.sesi,
+      onMasuk: this.onMasuk,
+      keluar: this.keluar,
+      sesiNama: (this.state.sesi && this.state.sesi.nama) || 'Pengguna',
+      sesiEmail: (this.state.sesi && this.state.sesi.email) || '',
+      sesiInisial: String((this.state.sesi && this.state.sesi.nama) || '?')
+        .trim().split(/\s+/).slice(0, 2).map(x => x.charAt(0).toUpperCase()).join('') || '?',
+
+      theme: th,
+      themeIcon: th === 'dark' ? '☀' : '☾',
+      toggleTheme: () => this.setState({ theme: th === 'dark' ? 'light' : 'dark' }),
+      refresh: () => this.load(),
+      statusKoneksi: mode === 'appscript' ? 'TERSAMBUNG · Google Sheets' : 'MODE ' + mode.toUpperCase(),
+      sourceLabel: this.state.source,
+      mode,
+      tabs: [tab('butir', 'Butir Kegiatan & Berkas'), tab('pagu', 'Revisi Pagu'), tab('rpd', 'Revisi RPD')],
+      tabButir: this.state.tab === 'butir',
+      tabPagu: this.state.tab === 'pagu',
+      tabRpd: this.state.tab === 'rpd',
+
+      subOptions, semuaOptions,
+      tahapOptions: TAHAP.map(t => ({ value: t.key, label: t.urut + '. ' + t.label }))
+        .concat([{ value: 'REVISI', label: '⚑ Perlu revisi (penanda)' }]),
+      formButir: this.state.formButir,
+      editingId: this.state.editingId,
+      busyButir: this.state.busyButir,
+      errButir: this.state.errButir,
+      okButir: this.state.okButir,
+      onFieldButir: this.onFieldButir,
+      submitButir: this.submitButir,
+      resetButir: this.resetButir,
+      cancelEdit: this.cancelEdit,
+
+      cari: this.state.cari,
+      onCari: (e) => this.setState({ cari: e.target.value, halaman: 1 }),
+      filterKomponen: this.state.filterKomponen,
+      onFilterKomponen: (e) => this.setState({ filterKomponen: e.target.value, halaman: 1 }),
+      filterStatus: this.state.filterStatus,
+      onFilterStatus: (e) => this.setState({ filterStatus: e.target.value, halaman: 1 }),
+      butirTampil: butirHalaman,
+      butirCaption: (butirTampil.length ? (mulai + 1) + '–' + Math.min(mulai + this.state.perHalaman, butirTampil.length) : '0') +
+        ' dari ' + butirTampil.length + ' butir tersaring · total ' + this.state.butir.length,
+      adaPaging: totalHalaman > 1,
+      halamanLabel: 'Halaman ' + hal + ' dari ' + totalHalaman,
+      halamanTabs: Array.from({ length: totalHalaman }, (_, i) => ({
+        label: String(i + 1),
+        onClick: () => this.setState({ halaman: i + 1 }),
+        bg: hal === i + 1 ? 'var(--navy)' : 'var(--surface)',
+        color: hal === i + 1 ? '#fff' : 'var(--ink-2)',
+        border: hal === i + 1 ? 'var(--navy)' : 'var(--line)'
+      })),
+      prevDim: hal <= 1 ? '.4' : '1',
+      nextDim: hal >= totalHalaman ? '.4' : '1',
+      onPrev: () => this.setState(s => ({ halaman: Math.max(1, s.halaman - 1) })),
+      onNext: () => this.setState(s => ({ halaman: Math.min(totalHalaman, s.halaman + 1) })),
+      ubahStatus: this.ubahStatus,
+      tandaiRevisi: this.tandaiRevisi,
+      mulaiEdit: this.mulaiEdit,
+      hapusButir: this.hapusButir,
+
+      cariPagu: this.state.cariPagu,
+      onCariPagu: (e) => this.setState({ cariPagu: e.target.value }),
+      barisPagu,
+      adaPesanPagu: !!this.state.pesanPagu,
+      pesanPagu: this.state.pesanPagu,
+      pesanPaguBg: this.state.pesanPaguOk ? 'var(--green-bg)' : 'var(--red-bg)',
+      pesanPaguBorder: this.state.pesanPaguOk ? 'var(--green)' : 'var(--red)',
+
+      utamaOptions: utama.map(u => ({ value: u.id, label: u.id + ' — ' + u.nama })),
+      rpdKomponen: this.state.rpdKomponen,
+      refRpdKomponen: (el) => { this.elRpd = el; if (el && el.options.length) el.value = this.state.rpdKomponen; },
+      onRpdKomponen: (e) => this.pilihRpd(e.target.value),
+      adaRpdPilihan: !!this.state.rpdKomponen,
+      rpdBulan: BLN.map((b, i) => {
+        const kunci = this.terkunci(i);
+        return {
+          label: b,
+          value: draftRpd[i],
+          kunci,
+          // Gembok monokrom di dalam kotak isian — tertutup saat terkunci.
+          kunciIkon: kunci ? '🔒' : '🔓',
+          kunciInk: 'var(--ink-2)',
+          kunciOpasitas: kunci ? '1' : '.42',
+          kunciJudul: kunci ? 'Buka kunci ' + b : 'Kunci ' + b + ' agar nilainya tidak berubah',
+          bg: kunci ? 'var(--surface-3)' : 'var(--surface-2)',
+          ink: kunci ? 'var(--ink-2)' : 'var(--ink)',
+          labelColor: i === bulanIni ? 'var(--navy-3)' : 'var(--ink-3)',
+          border: i === bulanIni ? 'var(--navy-3)' : 'var(--line)',
+          onKunci: () => this.toggleKunci(i),
+          onInput: (e) => this.onRpdBulan(i, e.target.value)
+        };
+      }),
+      rpdStats: [
+        { label: 'Total RPD setahun', value: 'Rp ' + fmt(totalRpd), color: 'var(--ink)' },
+        { label: 'Pagu komponen', value: 'Rp ' + fmt(paguRpd), color: 'var(--ink)' },
+        { label: 'Selisih thd pagu', value: 'Rp ' + fmt(totalRpd - paguRpd), color: totalRpd === paguRpd ? 'var(--green)' : 'var(--amber)' },
+        { label: 'RPD s.d. bulan ini', value: 'Rp ' + fmt(draftRpd.slice(0, bulanIni + 1).reduce((t, v) => t + (Number(this.digits(v)) || 0), 0)), color: 'var(--navy-3)' }
+      ],
+      adaPesanRpd: !!this.state.pesanRpd,
+      pesanRpd: this.state.pesanRpd,
+      pesanRpdBg: this.state.pesanRpdOk ? 'var(--green-bg)' : 'var(--red-bg)',
+      pesanRpdBorder: this.state.pesanRpdOk ? 'var(--green)' : 'var(--red)',
+      busyRpd: this.state.busyRpd,
+      busyRpdOpacity: this.state.busyRpd ? '.7' : '1',
+      labelSimpanRpd: this.state.busyRpd ? 'Menyimpan...' : 'Simpan RPD',
+      simpanRpd: this.simpanRpd,
+      resetRpd: this.resetRpd,
+
+      adaDraf: this.adaDraf(),
+      formKomp: this.state.formKomp,
+      formKompBuka: this.state.formKompBuka,
+      toggleFormKomp: () => this.setState(s => ({ formKompBuka: !s.formKompBuka, pesanPagu: '' })),
+      tambahLabel: this.state.formKompBuka ? '✕ Tutup' : '+ Tambah komponen',
+      tambahBg: this.state.formKompBuka ? 'var(--surface-3)' : 'var(--navy)',
+      tambahInk: this.state.formKompBuka ? 'var(--ink-2)' : '#fff',
+      tambahBorder: this.state.formKompBuka ? 'var(--line)' : 'var(--navy)',
+      kompTipeUtama: this.state.formKomp.tipe === 'UTAMA',
+      kompTipeSub: this.state.formKomp.tipe === 'SUB',
+      onKompId: (e) => this.onKompField('id', e.target.value),
+      onKompNama: (e) => this.onKompField('nama', e.target.value),
+      onKompPagu: (e) => this.onKompField('pagu', e.target.value),
+      onKompParent: (e) => this.onKompField('parent', e.target.value),
+      setTipeUtama: () => this.onKompField('tipe', 'UTAMA'),
+      setTipeSub: () => this.onKompField('tipe', 'SUB'),
+      busyKomp: this.state.busyKomp,
+      labelKomp: this.state.busyKomp ? 'Menyimpan...' : '+ Tambah Komponen',
+      simpanKomponen: this.simpanKomponen,
+      kompTipeUtamaBg: this.state.formKomp.tipe === 'UTAMA' ? 'var(--navy)' : 'var(--surface)',
+      kompTipeUtamaInk: this.state.formKomp.tipe === 'UTAMA' ? '#fff' : 'var(--ink-2)',
+      kompTipeSubBg: this.state.formKomp.tipe === 'SUB' ? 'var(--navy)' : 'var(--surface)',
+      kompTipeSubInk: this.state.formKomp.tipe === 'SUB' ? '#fff' : 'var(--ink-2)',
+
+      riwayatBuka: this.state.riwayatBuka,
+      riwayatIkon: this.state.riwayatBuka ? '▾' : '▸',
+      riwayatMuat: this.state.riwayatMuat,
+      bukaRiwayat: this.bukaRiwayat,
+      riwayat: this.state.riwayat.map(r => ({
+        waktu: r.waktu, aksi: r.aksi, detail: r.detail,
+        pengguna: r.pengguna || '—',
+        warna: /HAPUS|GAGAL/.test(r.aksi) ? 'var(--red)' : (/TAMBAH|ADD/.test(r.aksi) ? 'var(--green)' : 'var(--navy-3)')
+      })),
+      riwayatKosong: !this.state.riwayatMuat && this.state.riwayat.length === 0,
+
+      summary: [
+        { label: 'Total Pagu', value: short(pagu), color: 'var(--ink)' },
+        { label: 'Total Realisasi', value: short(real), color: 'var(--green)' },
+        { label: 'Sisa Anggaran', value: short(pagu - real), color: 'var(--amber)' },
+        { label: 'Butir Kegiatan', value: this.state.butir.length + ' berkas', color: 'var(--ink)' },
+        { label: 'Perlu Revisi', value: jumlahRevisi + ' berkas', color: jumlahRevisi ? 'var(--red)' : 'var(--ink-3)' },
+        { label: 'Sudah SP2D (bukti pencairan)', value: sp2dCount + ' berkas · ' + short(nominalSP2D), color: 'var(--green)' }
+      ],
+      antrian: TAHAP.map(t => ({
+        urut: t.urut, label: t.pendek, jumlah: hitung[t.key] || 0, color: t.color, bg: t.bg,
+        onClick: () => this.setState({ tab: 'butir', filterStatus: t.key, halaman: 1 })
+      })).concat([{
+        urut: '⚑', label: 'Perlu revisi', jumlah: jumlahRevisi, color: 'var(--red)', bg: 'var(--red-bg)',
+        onClick: () => this.setState({ tab: 'butir', filterStatus: 'REVISI', halaman: 1 })
+      }]),
+      sop: [
+        { n: '1', text: 'Tim Kerja menyerahkan berkas → Admin/TU mencatatnya sebagai Butir Kegiatan pada tahapan "Verifikasi Tim TU Pusdatin KP".' },
+        { n: '2', text: 'Setelah lengkap, naikkan ke "Verifikasi Tim Keuangan" dengan tombol panah di tabel.' },
+        { n: '3', text: 'Bila ada kekurangan: klik "⚑ Tandai revisi" dan tulis alasannya. Berkas TETAP di tahap saat itu — revisi hanya penanda, bukan tahap yang wajib dilewati. Setelah diperbaiki, klik "✓ Selesai revisi".' },
+        { n: '4', text: 'Begitu SP2D terbit, set tahap "SP2D" (kartu tersorot hijau). Nominalnya OTOMATIS masuk realisasi — tidak ada input pencairan terpisah.' },
+        { n: '5', text: 'Perubahan nama/besaran anggaran lewat tab "Revisi Pagu"; rencana penarikan bulanan lewat tab "Revisi RPD".' },
+        { n: '6', text: 'Dashboard publik menampilkan semua status ini read-only pada popup tiap komponen.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
