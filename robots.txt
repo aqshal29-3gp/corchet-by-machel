@@ -1,7 +1,12 @@
-User-agent: *
+# Izinkan crawler Google memeriksa halaman produk dan gambar.
+User-agent: Googlebot
 Allow: /
 
-# Halaman diagnostik internal — tidak perlu diindeks
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: *
+Allow: /
 Disallow: /tes-konversi.html
 Disallow: /kelola-8f3a.html
 
