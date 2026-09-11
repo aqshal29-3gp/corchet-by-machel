@@ -51,13 +51,12 @@ test('hero marquee: uses existing local webp assets only (no external hotlink)',
   }
 });
 
-test('hero marquee: has a JS rAF driver that moves the track', () => {
-  // rAF driver present (imun terhadap throttle CSS/compositing quirks)
-  assert.ok(tmpl.includes('requestAnimationFrame'), 'rAF marquee driver must exist');
-  assert.ok(tmpl.includes('--hx'), 'driver must drive the --hx transform var');
-  assert.ok(tmpl.includes('hero-marquee-track'), 'driver targets the marquee track');
-  // must bail out when user prefers reduced motion
-  assert.ok(/prefers-reduced-motion:\s*reduce/.test(tmpl), 'driver must check reduced-motion');
+test('hero marquee: CSS infinite animation and keyframes exist', () => {
+  // CSS animation present and active
+  assert.ok(tmpl.includes('@keyframes heroScroll'), 'keyframes heroScroll must exist');
+  assert.ok(tmpl.includes('animation:heroScroll 32s linear infinite'), '32s linear infinite animation on marquee track');
+  assert.ok(tmpl.includes('calc(-50% - 8px)'), 'seamless loop offset calculation');
+  assert.ok(tmpl.includes('animation-play-state:paused'), 'hover pause rule must exist');
 });
 
 test('hero marquee: honors prefers-reduced-motion', () => {
