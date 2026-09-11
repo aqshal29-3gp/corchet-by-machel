@@ -1,16 +1,4 @@
 {
-  ".impeccable/surfaces/index-rebuild-html.md": {
-    "mtime": 1788617467.8036098,
-    "seen": 1789020583.03257,
-    "ast_hash": "975959146b30618bd66700c8a6c38faf",
-    "semantic_hash": ""
-  },
-  "PRODUCT.md": {
-    "mtime": 1789124706.2385843,
-    "seen": 1789127172.9382443,
-    "ast_hash": "79b8188bf90100483e8b601a18541caa",
-    "semantic_hash": ""
-  },
   "README.md": {
     "mtime": 1788613170.7298331,
     "seen": 1789020583.0325806,
@@ -29,12 +17,6 @@
     "ast_hash": "31d59e20861f4de78e04d09264d69bbf",
     "semantic_hash": ""
   },
-  "index-new.html": {
-    "mtime": 1789124719.4888587,
-    "seen": 1789127172.9382632,
-    "ast_hash": "f7da34d7de24e72993067a2d2f5875e9",
-    "semantic_hash": ""
-  },
   "index-rebuild.html": {
     "mtime": 1789124719.4883773,
     "seen": 1789127172.938267,
@@ -42,9 +24,9 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1789132752.857895,
-    "seen": 1789132773.0662167,
-    "ast_hash": "07e374dfbccd982b12056667209115ac",
+    "mtime": 1789133511.8493638,
+    "seen": 1789133562.3691852,
+    "ast_hash": "0fc4693e9e7f14d3bc21d0ed803f07de",
     "semantic_hash": ""
   },
   "kelola-8f3a.html": {
@@ -360,9 +342,9 @@
     "semantic_hash": ""
   },
   "tests/hero-marquee.test.cjs": {
-    "mtime": 1789131834.3068109,
-    "seen": 1789131871.89898,
-    "ast_hash": "38d8c5f09d4a209e63ac6bbcd7f39295",
+    "mtime": 1789133538.3356233,
+    "seen": 1789133562.369152,
+    "ast_hash": "28a638fddf03edf542e18cbfd920c3a8",
     "semantic_hash": ""
   }
 }

@@ -1,16 +1,16 @@
 # Graph Report - machel-rebuild  (2026-09-11)
 
 ## Corpus Check
-- 9 files · ~290,059 words
+- 10 files · ~290,488 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 67 nodes · 58 edges · 9 communities (7 shown, 2 thin omitted)
+- 75 nodes · 65 edges · 10 communities (8 shown, 2 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `44a1ca03`
+- Built from commit: `79793a5a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -24,6 +24,7 @@
 - product-card-overflow.test.cjs
 - og-cache-bust.test.cjs
 - gallery.test.cjs
+- hero-marquee.test.cjs
 
 ## God Nodes (most connected - your core abstractions)
 1. `Product` - 11 edges
@@ -43,7 +44,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (9 total, 2 thin omitted)
+## Communities (10 total, 2 thin omitted)
 
 ### Community 0 - "Product"
 Cohesion: 0.17
@@ -73,13 +74,17 @@ Nodes (5): assert, fs, index, path, test
 Cohesion: 0.22
 Nodes (7): assert, DCLogic, fs, html, path, templateMatch, test
 
+### Community 9 - "hero-marquee.test.cjs"
+Cohesion: 0.25
+Nodes (7): assert, fs, html, m, path, test, tmpl
+
 ## Knowledge Gaps
-- **52 isolated node(s):** `test`, `assert`, `fs`, `path`, `html` (+47 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 57 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **59 isolated node(s):** `test`, `assert`, `fs`, `path`, `html` (+54 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 64 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **What connects `test`, `assert`, `fs` to the rest of the system?**
-  _52 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _59 weakly-connected nodes found - possible documentation gaps or missing edges._
