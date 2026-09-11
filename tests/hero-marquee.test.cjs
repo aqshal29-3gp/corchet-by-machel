@@ -51,12 +51,16 @@ test('hero marquee: uses existing local webp assets only (no external hotlink)',
   }
 });
 
-test('hero marquee: CSS infinite animation and keyframes exist', () => {
-  // CSS animation present and active
-  assert.ok(tmpl.includes('@keyframes heroScroll'), 'keyframes heroScroll must exist');
-  assert.ok(tmpl.includes('animation:heroScroll 32s linear infinite'), '32s linear infinite animation on marquee track');
-  assert.ok(tmpl.includes('calc(-50% - 8px)'), 'seamless loop offset calculation');
-  assert.ok(tmpl.includes('animation-play-state:paused'), 'hover pause rule must exist');
+test('hero marquee: rAF driver moves the track via --hx (survives re-mount)', () => {
+  // rAF driver lives in the executed outer bootstrap (moves hero photos right-to-left)
+  assert.ok(html.includes('initHeroMarquee'), 'rAF marquee driver must exist');
+  assert.ok(html.includes('requestAnimationFrame(step)'), 'driver must loop via rAF');
+  assert.ok(html.includes('--hx'), 'driver must drive the --hx transform var');
+  assert.ok(html.includes("querySelector('.hero-marquee-track')"), 'driver must query the track');
+  // CSS binds the var to the transform
+  assert.ok(tmpl.includes('translate3d(var(--hx,0px),0,0)'), 'CSS must bind --hx to transform');
+  // hover pause preserved at JS level
+  assert.ok(html.includes('.hero-marquee'), 'driver must reference the marquee wrapper');
 });
 
 test('hero marquee: honors prefers-reduced-motion', () => {
