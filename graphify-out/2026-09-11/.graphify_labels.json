@@ -6,5 +6,6 @@
   "4": "og-image.test.cjs",
   "5": "product-card.test.cjs",
   "6": "product-card-overflow.test.cjs",
-  "7": "og-cache-bust.test.cjs"
+  "7": "og-cache-bust.test.cjs",
+  "8": "gallery.test.cjs"
 }

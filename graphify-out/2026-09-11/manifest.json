@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   "PRODUCT.md": {
-    "mtime": 1788617256.4344823,
-    "seen": 1789020583.032576,
-    "ast_hash": "954b4c9939c515b328b72b94172b1580",
+    "mtime": 1789124706.2385843,
+    "seen": 1789127172.9382443,
+    "ast_hash": "79b8188bf90100483e8b601a18541caa",
     "semantic_hash": ""
   },
   "README.md": {
@@ -30,21 +30,21 @@
     "semantic_hash": ""
   },
   "index-new.html": {
-    "mtime": 1789018191.5485773,
-    "seen": 1789020583.0325937,
-    "ast_hash": "e4d99b5dfc4c621c45e3737a8aaa6e75",
+    "mtime": 1789124719.4888587,
+    "seen": 1789127172.9382632,
+    "ast_hash": "f7da34d7de24e72993067a2d2f5875e9",
     "semantic_hash": ""
   },
   "index-rebuild.html": {
-    "mtime": 1789116844.0037394,
-    "seen": 1789116863.7105086,
-    "ast_hash": "e3eb68d8af9b5ffc31d386a59b0cdd25",
+    "mtime": 1789124719.4883773,
+    "seen": 1789127172.938267,
+    "ast_hash": "01d159c8f3d5bccc3614eae31dd09a2c",
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1789122892.5981667,
-    "seen": 1789122900.3867748,
-    "ast_hash": "6660e8f04bf7ccb1ce613b0fa961c3cf",
+    "mtime": 1789127127.4755955,
+    "seen": 1789127172.9382708,
+    "ast_hash": "eb1ed7104201d9230f7da7eb85f06ec0",
     "semantic_hash": ""
   },
   "kelola-8f3a.html": {
@@ -279,6 +279,84 @@
     "mtime": 1789122887.3044846,
     "seen": 1789122900.3868718,
     "ast_hash": "63f7579ee00168a3ecc58d08e6846bdf",
+    "semantic_hash": ""
+  },
+  "tests/gallery.test.cjs": {
+    "mtime": 1789126700.581413,
+    "seen": 1789127172.9382067,
+    "ast_hash": "cd9336687020f0ab56452ed641a21bc9",
+    "semantic_hash": ""
+  },
+  "assets/foto-gal-labubu-01.webp": {
+    "mtime": 1789126328.5587707,
+    "seen": 1789127172.9383314,
+    "ast_hash": "0d7f2077554055b488204416661a0839",
+    "semantic_hash": ""
+  },
+  "assets/foto-gal-labubu-02.webp": {
+    "mtime": 1789126328.983775,
+    "seen": 1789127172.9383345,
+    "ast_hash": "3db8e43d9e879e5523a5846343c85aea",
+    "semantic_hash": ""
+  },
+  "assets/foto-gal-labubu-03.webp": {
+    "mtime": 1789126329.4237792,
+    "seen": 1789127172.9383376,
+    "ast_hash": "3ca65ff073626b3b179dbb2c34ef73bc",
+    "semantic_hash": ""
+  },
+  "assets/foto-gal-labubu-04.webp": {
+    "mtime": 1789126329.8547833,
+    "seen": 1789127172.938341,
+    "ast_hash": "f625536cbde7e6441739b0fa4444d652",
+    "semantic_hash": ""
+  },
+  "assets/foto-gal-prod-01.webp": {
+    "mtime": 1789126325.4717405,
+    "seen": 1789127172.938344,
+    "ast_hash": "61ed65bf8c69df4139da5b445d4664ad",
+    "semantic_hash": ""
+  },
+  "assets/foto-gal-prod-02.webp": {
+    "mtime": 1789126325.822744,
+    "seen": 1789127172.938347,
+    "ast_hash": "67031f4dbec8128856c458539b2abf48",
+    "semantic_hash": ""
+  },
+  "assets/foto-gal-prod-03.webp": {
+    "mtime": 1789126326.1657472,
+    "seen": 1789127172.93835,
+    "ast_hash": "ceaef838756fe134050ed45e75a0f9d5",
+    "semantic_hash": ""
+  },
+  "assets/foto-gal-prod-04.webp": {
+    "mtime": 1789126326.6207516,
+    "seen": 1789127172.9383538,
+    "ast_hash": "e3469082c11fcb97cdd2aa90460a7e4e",
+    "semantic_hash": ""
+  },
+  "assets/foto-gal-prod-05.webp": {
+    "mtime": 1789126327.041756,
+    "seen": 1789127172.9383566,
+    "ast_hash": "1a06f8ae93d839bf74ea0ca35d8f6396",
+    "semantic_hash": ""
+  },
+  "assets/foto-gal-prod-06.webp": {
+    "mtime": 1789126327.4447598,
+    "seen": 1789127172.93836,
+    "ast_hash": "70e20d5c58b18da6ffc92bfb27c95fa9",
+    "semantic_hash": ""
+  },
+  "assets/foto-gal-prod-07.webp": {
+    "mtime": 1789126327.7977633,
+    "seen": 1789127172.938363,
+    "ast_hash": "436126de416fc204b6ae431b01bb319d",
+    "semantic_hash": ""
+  },
+  "assets/foto-gal-prod-08.webp": {
+    "mtime": 1789126328.1497667,
+    "seen": 1789127172.9383664,
+    "ast_hash": "e0e23f39d067eeffea6d36c69b02f8ba",
     "semantic_hash": ""
   }
 }

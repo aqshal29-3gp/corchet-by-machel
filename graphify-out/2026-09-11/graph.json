@@ -17,6 +17,19 @@
       "source_location": "L7"
     },
     {
+      "id": "tests_gallery_test_dclogic",
+      "label": "DCLogic",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "gallery.test.cjs",
+      "file_type": "code",
+      "norm_label": "dclogic",
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L17"
+    },
+    {
       "id": "tests_social_feed_test_dclogic_constructor",
       "label": ".constructor()",
       "_callable": true,
@@ -27,6 +40,18 @@
       "norm_label": ".constructor()",
       "source_file": "tests/social-feed.test.cjs",
       "source_location": "L7"
+    },
+    {
+      "id": "tests_gallery_test_dclogic_constructor",
+      "label": ".constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "gallery.test.cjs",
+      "file_type": "code",
+      "norm_label": ".constructor()",
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L17"
     },
     {
       "id": "product",
@@ -666,6 +691,83 @@
       "norm_label": "test",
       "source_file": "tests/og-cache-bust.test.cjs",
       "source_location": "L1"
+    },
+    {
+      "id": "tests_gallery_test",
+      "label": "gallery.test.cjs",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "gallery.test.cjs",
+      "file_type": "code",
+      "norm_label": "gallery.test.cjs",
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L1"
+    },
+    {
+      "id": "tests_gallery_test_assert",
+      "label": "assert",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "gallery.test.cjs",
+      "file_type": "code",
+      "norm_label": "assert",
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L2"
+    },
+    {
+      "id": "tests_gallery_test_fs",
+      "label": "fs",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "gallery.test.cjs",
+      "file_type": "code",
+      "norm_label": "fs",
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L3"
+    },
+    {
+      "id": "tests_gallery_test_html",
+      "label": "html",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "gallery.test.cjs",
+      "file_type": "code",
+      "norm_label": "html",
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L6"
+    },
+    {
+      "id": "tests_gallery_test_path",
+      "label": "path",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "gallery.test.cjs",
+      "file_type": "code",
+      "norm_label": "path",
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L4"
+    },
+    {
+      "id": "tests_gallery_test_templatematch",
+      "label": "templateMatch",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "gallery.test.cjs",
+      "file_type": "code",
+      "norm_label": "templatematch",
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L7"
+    },
+    {
+      "id": "tests_gallery_test_test",
+      "label": "test",
+      "_origin": "ast",
+      "community": 8,
+      "community_name": "gallery.test.cjs",
+      "file_type": "code",
+      "norm_label": "test",
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L1"
     }
   ],
   "links": [
@@ -821,6 +923,83 @@
       "confidence_score": 1.0,
       "source_file": "README.md",
       "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_gallery_test",
+      "target": "tests_gallery_test_test",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_gallery_test",
+      "target": "tests_gallery_test_dclogic",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_gallery_test",
+      "target": "tests_gallery_test_assert",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_gallery_test",
+      "target": "tests_gallery_test_fs",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_gallery_test",
+      "target": "tests_gallery_test_path",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_gallery_test",
+      "target": "tests_gallery_test_html",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_gallery_test",
+      "target": "tests_gallery_test_templatematch",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L7",
       "weight": 1.0
     },
     {
@@ -1209,6 +1388,17 @@
       "weight": 1.0
     },
     {
+      "source": "tests_gallery_test_dclogic",
+      "target": "tests_gallery_test_dclogic_constructor",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/gallery.test.cjs",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
       "source": "tests_social_feed_test_dclogic",
       "target": "tests_social_feed_test_dclogic_constructor",
       "relation": "method",
@@ -1221,5 +1411,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "700153040776057dcf2e81a3714af3f846873d7f"
+  "built_at_commit": "44a1ca0363f6f958ae68d55b9155e96251ba61d8"
 }
