@@ -42,9 +42,9 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1789129351.036451,
-    "seen": 1789129457.1914327,
-    "ast_hash": "130d31c0c36b92aaffe7c24f26a56b16",
+    "mtime": 1789130071.5045323,
+    "seen": 1789130110.686581,
+    "ast_hash": "a1765029afdfbd39882ac8a26d6dca71",
     "semantic_hash": ""
   },
   "kelola-8f3a.html": {
@@ -360,9 +360,9 @@
     "semantic_hash": ""
   },
   "tests/hero-marquee.test.cjs": {
-    "mtime": 1789129304.2369905,
-    "seen": 1789129457.1913738,
-    "ast_hash": "8c6cba1a83c18421cb21b169289260dc",
+    "mtime": 1789129931.014152,
+    "seen": 1789130110.6865242,
+    "ast_hash": "eed9dafd9e2feb7cfb2a20208a839a51",
     "semantic_hash": ""
   }
 }
