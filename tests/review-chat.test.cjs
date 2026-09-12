@@ -39,6 +39,7 @@ test('ReviewChat images are accessible and open lightbox',()=>{
 test('ReviewChat respects reduced motion and mobile overflow',()=>{
   assert.ok(tmpl.includes('@media (prefers-relify-motion: reduce)') || tmpl.includes('@media (prefers-reduced-motion: reduce)'));
   assert.ok(tmpl.includes('.rc-track{animation:none'));
+  assert.ok(tmpl.includes('.rc-column-b .rc-track{animation:none'), 'reverse middle column must also stop');
   assert.ok(tmpl.includes('@media (max-width:520px)'));
   assert.ok(tmpl.includes('scroll-slk') || tmpl.includes('scroll-snape') || tmpl.includes('overflow-x:auto'));
 });
