@@ -12,6 +12,7 @@ test('Berrygirl URLs use template bindings accepted by the site bundler', () => 
   assert.match(tmpl, /src="\{\{ whyBerrygirl\.before \}\}"/);
   assert.match(tmpl, /src="\{\{ whyBerrygirl\.after \}\}"/);
   assert.doesNotMatch(tmpl, /src="assets\/berrygirl-/);
+  assert.match(tmpl, /whyBerrygirl:\s*\{ before: \(globalThis\.location\?\.origin \|\| ""\) \+ "\/assets\/berrygirl-before\.webp", after: \(globalThis\.location\?\.origin \|\| ""\) \+ "\/assets\/berrygirl-after\.webp" \}/);
 });
 
 test('Kenapa Machel Crochet opens with accessible Berrygirl comparison', () => {
