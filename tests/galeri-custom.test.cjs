@@ -9,14 +9,9 @@ const m = html.match(/<script type="__bundler\/template">\s*("[\s\S]*?")\s*<\/sc
 assert.ok(m, 'template script must exist');
 const tmpl = JSON.parse(m[1]);
 
-test('galeri custom: default fallback data present', () => {
-  assert.ok(tmpl.includes('DEFAULT_GALERI_CUSTOM'), 'DEFAULT_GALERI_CUSTOM must exist');
-  assert.ok(tmpl.includes('galeriCustom: DEFAULT_GALERI_CUSTOM'), 'state must init galeriCustom');
-  // 3 sample items with both photos
-  const idx = tmpl.indexOf('const DEFAULT_GALERI_CUSTOM = [');
-  const seg = tmpl.slice(idx, tmpl.indexOf('];', idx));
-  assert.strictEqual((seg.match(/fotoRequest/g) || []).length, 3, '3 sample fotoRequest');
-  assert.strictEqual((seg.match(/fotoJadi/g) || []).length, 3, '3 sample fotoJadi');
+test('galeri custom: no dummy flash before Sheet loads', () => {
+  assert.ok(!tmpl.includes('DEFAULT_GALERI_CUSTOM'), 'dummy fallback must not ship');
+  assert.ok(tmpl.includes('galeriCustom: []'), 'state must start empty');
 });
 
 test('galeri custom: pulls from Sheet via Apps Script action', () => {
