@@ -7,9 +7,12 @@ here and committing plain JSON keeps those sections working regardless of Apps S
 
 Fail-safe: on any error the existing JSON files are left untouched and exit code is non-zero.
 """
+import fcntl
 import json
 import os
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,6 +36,37 @@ def items(values):
     return rows
 
 
+def publish(pending):
+    """Publish all outputs as one recoverable, single-run transaction."""
+    ROOT.mkdir(parents=True, exist_ok=True)
+    with (ROOT / ".sync-content.lock").open("w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        with tempfile.TemporaryDirectory(prefix=".content-sync-", dir=ROOT) as work:
+            work = Path(work)
+            staged = []
+            for name, text in pending.items():
+                target = ROOT / name
+                new = work / (name + ".new-sync-content")
+                backup = work / (name + ".old-sync-content")
+                new.write_text(text)
+                if target.exists():
+                    shutil.copy2(target, backup)
+                staged.append((new, target, backup))
+
+            published = []
+            try:
+                for new, target, backup in staged:
+                    os.replace(new, target)
+                    published.append((target, backup))
+            except Exception:
+                for target, backup in reversed(published):
+                    if backup.exists():
+                        os.replace(backup, target)
+                    else:
+                        target.unlink(missing_ok=True)
+                raise
+
+
 def main():
     from google.oauth2.credentials import Credentials
     from googleapiclient.discovery import build
@@ -42,22 +76,9 @@ def main():
     pending = {}
     for tab, name in JOBS:
         data = items(svc.get(spreadsheetId=SHEET_ID, range=f"{tab}!A1:Z500").execute().get("values", []))
-        if not data:
-            raise SystemExit(f"{tab}: no visible rows; refusing to write")
         pending[name] = json.dumps({"items": data}, ensure_ascii=False, indent=2) + "\n"
 
-    staged = []
-    try:
-        for name, text in pending.items():
-            tmp = ROOT / (name + ".tmp")
-            tmp.write_text(text)
-            staged.append((tmp, ROOT / name))
-        for tmp, target in staged:
-            os.replace(tmp, target)
-    finally:
-        for tmp, _ in staged:
-            tmp.unlink(missing_ok=True)
-
+    publish(pending)
     print(json.dumps({"ok": True, "written": {name: len(json.loads(text)["items"]) for name, text in pending.items()}}))
 
 
