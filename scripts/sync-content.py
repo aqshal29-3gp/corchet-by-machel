@@ -5,7 +5,11 @@ Why static: the Apps Script web app returns 403 for anonymous visitors, which si
 emptied the custom gallery and chat-review sections on the live site. Reading the sheet
 here and committing plain JSON keeps those sections working regardless of Apps Script.
 
-Fail-safe: on any error the existing JSON files are left untouched and exit code is non-zero.
+Fail-safe: on any source or validation error the existing JSON files are left untouched
+and exit code is non-zero. Publish uses a per-run staging directory under an
+exclusive lock; if a replace fails, already-published files are restored from
+staged backups. If the rollback itself fails, the staging directory (with
+backups) is preserved and a RuntimeError names its path.
 """
 import fcntl
 import json
