@@ -18,14 +18,20 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 TOKEN = "/home/pusdatinkp/.hermes/profiles/manajer_toko_machelcrochet/google_token.json"
 SHEET_ID = "1Lta0Um9OUQUaSAlQY495bGL9PXCnTRprIs1xdnUv0GI"
-JOBS = [("GaleriCustom", "galeri-custom.json"), ("ReviewChat", "review-chat.json")]
+JOBS = [
+    ("GaleriCustom", "galeri-custom.json", {"judul", "fotoRequest", "fotoJadi", "tampil"}),
+    ("ReviewChat", "review-chat.json", {"gambar", "tampil"}),
+]
 HIDDEN = {"tidak", "no", "false", "0"}
 
 
-def items(values):
-    if not values or len(values) < 2:
-        raise SystemExit("sheet empty or header only")
+def items(values, required):
+    if not values:
+        raise SystemExit("sheet empty")
     header = values[0]
+    missing = required - set(header)
+    if missing:
+        raise SystemExit("unexpected sheet header; missing: " + ", ".join(sorted(missing)))
     rows = []
     for raw in values[1:]:
         rec = dict(zip(header, list(raw) + [""] * (len(header) - len(raw))))
@@ -41,8 +47,8 @@ def publish(pending):
     ROOT.mkdir(parents=True, exist_ok=True)
     with (ROOT / ".sync-content.lock").open("w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
-        with tempfile.TemporaryDirectory(prefix=".content-sync-", dir=ROOT) as work:
-            work = Path(work)
+        work = Path(tempfile.mkdtemp(prefix=".content-sync-", dir=ROOT))
+        try:
             staged = []
             for name, text in pending.items():
                 target = ROOT / name
@@ -58,13 +64,23 @@ def publish(pending):
                 for new, target, backup in staged:
                     os.replace(new, target)
                     published.append((target, backup))
-            except Exception:
-                for target, backup in reversed(published):
-                    if backup.exists():
-                        os.replace(backup, target)
-                    else:
-                        target.unlink(missing_ok=True)
+            except Exception as publish_error:
+                try:
+                    for target, backup in reversed(published):
+                        if backup.exists():
+                            os.replace(backup, target)
+                        else:
+                            target.unlink(missing_ok=True)
+                except Exception as rollback_error:
+                    raise RuntimeError(
+                        f"publish failed; rollback failed; backups preserved in {work}"
+                    ) from ExceptionGroup("publish and rollback failures", [publish_error, rollback_error])
+                shutil.rmtree(work)
                 raise
+        except Exception:
+            raise
+        else:
+            shutil.rmtree(work)
 
 
 def main():
@@ -74,8 +90,11 @@ def main():
     svc = build("sheets", "v4", credentials=Credentials.from_authorized_user_file(TOKEN),
                 cache_discovery=False).spreadsheets().values()
     pending = {}
-    for tab, name in JOBS:
-        data = items(svc.get(spreadsheetId=SHEET_ID, range=f"{tab}!A1:Z500").execute().get("values", []))
+    for tab, name, required in JOBS:
+        data = items(
+            svc.get(spreadsheetId=SHEET_ID, range=f"{tab}!A1:Z500").execute().get("values", []),
+            required,
+        )
         pending[name] = json.dumps({"items": data}, ensure_ascii=False, indent=2) + "\n"
 
     publish(pending)
