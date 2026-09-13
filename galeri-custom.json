@@ -1,17 +1,24 @@
 {
   "items": [
     {
-      "judul": "Request custom by Maulana",
+      "judul": "Request custom by M******",
       "fotoRequest": "https://drive.google.com/uc?export=view&id=1VT04kwwAbpJuThq_tyP7twSElm7GkZv6",
       "fotoJadi": "https://drive.google.com/uc?export=view&id=1uYGVzFiggsmVO-Ia4JW5NTJGFOf521IZ",
       "urutan": "1",
       "tampil": "ya"
     },
     {
-      "judul": "Request custom by Desi (Jungkook BTS)",
+      "judul": "Request custom by D*** (Jungkook BTS)",
       "fotoRequest": "https://drive.google.com/uc?export=view&id=1OpnA4GJk4A3fJ-A00ZxOF51jj1pBMZz-",
       "fotoJadi": "https://drive.google.com/uc?export=view&id=1WxqKryQ208OR3p_gZbia6sEUkaYQx1pm",
       "urutan": "2",
+      "tampil": "ya"
+    },
+    {
+      "judul": "Request custom Bubu Dudu by R******",
+      "fotoRequest": "https://drive.google.com/uc?export=view&id=1w8IWzzq9nwCeyl7LQQzI7LwktjEQGItI",
+      "fotoJadi": "https://drive.google.com/uc?export=view&id=1L5zdoYR6P8H-UhmkRmN68n3Oun6dnbGm",
+      "urutan": "3",
       "tampil": "ya"
     }
   ]
