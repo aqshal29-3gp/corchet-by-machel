@@ -192,9 +192,10 @@ const T_SOSMED  = 'Sosmed';
 const T_GALERI  = 'Galeri';
 const T_GALERI_CUSTOM = 'GaleriCustom';
 const T_REVIEW_CHAT = 'ReviewChat';
+const T_MATA_UANG = 'MataUang';
 
 // Tab yang boleh disunting lewat panel admin.
-const TAB_ADMIN = [T_PRODUK, T_GALERI, T_GALERI_CUSTOM, T_REVIEW_CHAT, T_SOSMED, T_PESANAN, T_REVIEW, T_SETTING, T_PELANGGAN];
+const TAB_ADMIN = [T_PRODUK, T_GALERI, T_GALERI_CUSTOM, T_REVIEW_CHAT, T_MATA_UANG, T_SOSMED, T_PESANAN, T_REVIEW, T_SETTING, T_PELANGGAN];
 
 // Urutan tahap pesanan yang dipakai halaman "Lacak Pesanan".
 const TAHAP = ['MENUNGGU BAYAR', 'LUNAS', 'DIRAJUT', 'SIAP KIRIM', 'DIKIRIM', 'SELESAI'];
@@ -310,6 +311,14 @@ function doGet(e) {
     const out = rows.map(r => Object.fromEntries(headers.map((h, i) => [h, r[i]])))
       .filter(x => String(x.gambar || '').trim() && /^(ya|yes|true|1)$/i.test(String(x.tampil || '')))
       .sort((a, b) => (Number(a.urutan) || 99) - (Number(b.urutan) || 99));
+    return json({ ok: true, items: out });
+  }
+  if (p.action === 'currencies') {
+    const rows = sheet(T_MATA_UANG).getDataRange().getValues();
+    if (rows.length < 2) return json({ ok: true, items: [] });
+    const headers = rows.shift().map(h => String(h).trim().toLowerCase());
+    const out = rows.map(r => Object.fromEntries(headers.map((h, i) => [h, r[i]])))
+      .filter(x => /^(IDR|SGD|MYR)$/.test(String(x.kode || '').toUpperCase()) && Number(x.kurs) > 0 && !/^(tidak|no|false|0)$/i.test(String(x.aktif || 'ya')));
     return json({ ok: true, items: out });
   }
   if (p.action === 'kota') return cariTujuan(p.q);

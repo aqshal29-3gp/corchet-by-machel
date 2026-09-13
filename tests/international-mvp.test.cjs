@@ -1,0 +1,6 @@
+const test=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const path=require('node:path');
+const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');const m=html.match(/<script type="__bundler\/template">\s*("[\s\S]*?")\s*<\/script>\s*<\/body>/);const t=JSON.parse(m[1]);
+test('currencies come from backend and default safely to IDR',()=>{assert.match(t,/currency:\s*"IDR"/);assert.match(t,/currencies:\s*\[\]/);assert.match(t,/action=currencies/);assert.match(t,/setCurrency/);});
+test('currency selector and estimate disclosure exist',()=>{assert.match(t,/aria-label="Pilih mata uang tampilan"/);assert.match(t,/currencyOptions/);assert.match(t,/Estimasi mata uang/);assert.match(t,/pembayaran tetap diproses dalam Rupiah/i);});
+test('international scope is Singapore and Malaysia via WhatsApp only',()=>{assert.match(t,/Pesanan Internasional/);assert.match(t,/Singapura dan Malaysia/);assert.match(t,/internationalWaLink/);assert.match(t,/ongkir[^<]*dikonfirmasi manual/i);});
+test('checkout accounting remains IDR',()=>{assert.match(t,/Subtotal produk : Rp/);assert.match(t,/Estimasi total: Rp/);assert.doesNotMatch(t,/recordOrder\(orderId,\s*this\.convert/);});
