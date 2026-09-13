@@ -22,15 +22,8 @@ test('checkout intent emits begin_checkout with real cart value in IDR', () => {
   assert.match(template, /const nilai = this\.state\.cart\.reduce/);
 });
 
-test('purchase emits only after a successful invoice response', () => {
-  const success = template.indexOf('const link = res && res.ok &&');
-  const purchase = template.indexOf('this.lacakKonversi(orderId, total, "Invoice gabungan")', success);
-  const failure = template.indexOf('.catch(e =>', success);
-  assert.ok(success >= 0 && purchase > success && purchase < failure);
-  assert.doesNotMatch(template, /recordOrder\([^)]*\) \{\s*this\.lacakKonversi/);
-  assert.match(template, /transaction_id: orderId/);
-  assert.match(template, /value: nilai/);
-  assert.match(template, /currency: "IDR"/);
+test('invoice response does not claim payment completed', () => {
+  assert.doesNotMatch(template, /this\.lacakKonversi\(orderId, total, "Invoice gabungan"\)/);
 });
 
 test('landing URLs are canonical HTTPS URLs', () => {

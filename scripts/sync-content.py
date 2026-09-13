@@ -8,11 +8,9 @@ here and committing plain JSON keeps those sections working regardless of Apps S
 Fail-safe: on any error the existing JSON files are left untouched and exit code is non-zero.
 """
 import json
+import os
 import sys
 from pathlib import Path
-
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
 
 ROOT = Path(__file__).resolve().parents[1]
 TOKEN = "/home/pusdatinkp/.hermes/profiles/manajer_toko_machelcrochet/google_token.json"
@@ -36,16 +34,31 @@ def items(values):
 
 
 def main():
+    from google.oauth2.credentials import Credentials
+    from googleapiclient.discovery import build
+
     svc = build("sheets", "v4", credentials=Credentials.from_authorized_user_file(TOKEN),
                 cache_discovery=False).spreadsheets().values()
-    written = {}
+    pending = {}
     for tab, name in JOBS:
         data = items(svc.get(spreadsheetId=SHEET_ID, range=f"{tab}!A1:Z500").execute().get("values", []))
         if not data:
             raise SystemExit(f"{tab}: no visible rows; refusing to write")
-        (ROOT / name).write_text(json.dumps({"items": data}, ensure_ascii=False, indent=2) + "\n")
-        written[name] = len(data)
-    print(json.dumps({"ok": True, "written": written}))
+        pending[name] = json.dumps({"items": data}, ensure_ascii=False, indent=2) + "\n"
+
+    staged = []
+    try:
+        for name, text in pending.items():
+            tmp = ROOT / (name + ".tmp")
+            tmp.write_text(text)
+            staged.append((tmp, ROOT / name))
+        for tmp, target in staged:
+            os.replace(tmp, target)
+    finally:
+        for tmp, _ in staged:
+            tmp.unlink(missing_ok=True)
+
+    print(json.dumps({"ok": True, "written": {name: len(json.loads(text)["items"]) for name, text in pending.items()}}))
 
 
 if __name__ == "__main__":
