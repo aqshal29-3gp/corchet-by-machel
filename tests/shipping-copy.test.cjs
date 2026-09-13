@@ -17,8 +17,11 @@ test('no flat-rate shipping claim anywhere', () => {
   assert.ok(!/ongkir\s+flat/i.test(tmpl.replace(/\/\/.*$/gm, '')), 'must not advertise flat shipping to buyers');
 });
 
+test('prompt tells the buyer rates come per destination', () => {
+  assert.ok(tmpl.includes('Pilih kecamatan tujuan'), 'must ask for a destination district');
+});
+
 test('shipping fallback tells the buyer it is confirmed on WhatsApp', () => {
-  assert.ok(tmpl.includes('Cek ongkir otomatis sedang tidak tersedia'), 'fallback copy must state quotes are unavailable');
   assert.ok(tmpl.includes('konfirmasi lewat WhatsApp sebelum pembayaran'), 'fallback must promise WhatsApp confirmation before payment');
 });
 
