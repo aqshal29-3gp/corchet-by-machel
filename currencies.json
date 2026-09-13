@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "kode": "IDR",
+      "kurs": 1.0,
+      "simbol": "Rp",
+      "aktif": "ya",
+      "diperbarui": "2026-09-11"
+    },
+    {
+      "kode": "SGD",
+      "kurs": 13467.74,
+      "simbol": "S$",
+      "aktif": "ya",
+      "diperbarui": "2026-09-11"
+    },
+    {
+      "kode": "MYR",
+      "kurs": 4190.84,
+      "simbol": "RM",
+      "aktif": "ya",
+      "diperbarui": "2026-09-11"
+    }
+  ]
+}
