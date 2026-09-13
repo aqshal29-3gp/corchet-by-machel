@@ -10,7 +10,7 @@ test('ReviewChat starts empty and fetches Sheet endpoint',()=>{
   assert.ok(tmpl.includes('reviewChat: []'));
   assert.ok(tmpl.includes('this.loadReviewChat();'));
   assert.ok(tmpl.includes('loadReviewChat() {'));
-  assert.ok(tmpl.includes('action=reviewChat'));
+  assert.ok(tmpl.includes('review-chat.json'));
   assert.ok(tmpl.includes('this.setState({ reviewChat: items })'));
 });
 

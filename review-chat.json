@@ -1,0 +1,46 @@
+{
+  "items": [
+    {
+      "gambar": "https://machelcrochet.my.id/assets/review-chat-01.webp",
+      "platform": "WhatsApp",
+      "alt": "Review chat pelanggan MachelCrochet 1",
+      "urutan": "1",
+      "tampil": "ya"
+    },
+    {
+      "gambar": "https://machelcrochet.my.id/assets/review-chat-02.webp",
+      "platform": "WhatsApp",
+      "alt": "Review chat pelanggan MachelCrochet 2",
+      "urutan": "2",
+      "tampil": "ya"
+    },
+    {
+      "gambar": "https://machelcrochet.my.id/assets/review-chat-03.webp",
+      "platform": "WhatsApp",
+      "alt": "Review chat pelanggan MachelCrochet 3",
+      "urutan": "3",
+      "tampil": "ya"
+    },
+    {
+      "gambar": "https://machelcrochet.my.id/assets/review-chat-04.webp",
+      "platform": "WhatsApp",
+      "alt": "Review chat pelanggan MachelCrochet 4",
+      "urutan": "4",
+      "tampil": "ya"
+    },
+    {
+      "gambar": "https://machelcrochet.my.id/assets/review-chat-05.webp",
+      "platform": "WhatsApp",
+      "alt": "Review chat pelanggan MachelCrochet 5",
+      "urutan": "5",
+      "tampil": "ya"
+    },
+    {
+      "gambar": "https://machelcrochet.my.id/assets/review-chat-06.webp",
+      "platform": "WhatsApp",
+      "alt": "Review chat pelanggan MachelCrochet 6",
+      "urutan": "6",
+      "tampil": "ya"
+    }
+  ]
+}

@@ -16,7 +16,7 @@ test('galeri custom: no dummy flash before Sheet loads', () => {
 
 test('galeri custom: pulls from Sheet via Apps Script action', () => {
   assert.ok(tmpl.includes('loadGaleriCustom() {'), 'loadGaleriCustom method must exist');
-  assert.ok(tmpl.includes('action=galeriCustom'), 'must fetch action=galeriCustom');
+  assert.ok(tmpl.includes('galeri-custom.json'), 'must fetch static galeri-custom.json');
   assert.ok(tmpl.includes('this.loadGaleriCustom();'), 'must call loadGaleriCustom on init');
   assert.ok(tmpl.includes('this.setState({ galeriCustom: items })'), 'must set galeriCustom state from items');
   assert.ok(!tmpl.includes('if (items.length) this.setState({ galeriCustom: items })'), 'valid empty Sheet response must clear stale fallback items');
