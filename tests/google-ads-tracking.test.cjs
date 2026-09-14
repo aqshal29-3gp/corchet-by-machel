@@ -30,3 +30,8 @@ test('landing URLs are canonical HTTPS URLs', () => {
   assert.match(template, /<link rel="canonical" href="https:\/\/machelcrochet\.my\.id\/">/);
   assert.doesNotMatch(sitemap, /<loc>http:\/\//);
 });
+
+test('order creation includes adAttribution identifiers from URL parameters', () => {
+  assert.match(template, /\['gclid', 'gbraid', 'wbraid'\]\.forEach/);
+  assert.match(template, /adAttribution: \['gclid', 'gbraid', 'wbraid'\]\.reduce/);
+});
