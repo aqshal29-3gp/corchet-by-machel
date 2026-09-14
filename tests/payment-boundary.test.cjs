@@ -11,7 +11,7 @@ test('invoice creation never emits a paid purchase', () => {
 test('uncertain invoice fallback preserves ID without another order write', () => {
  const method = source.slice(source.indexOf('  handleCheckout ='), source.indexOf('  handlePay ='));
  const recorded = []; const opened = [];
- const owner = {state:{cart:[{name:'Fixture',qty:1,price:100,priceLabel:'100'}],buyer:{name:'Fixture',phone:'0',email:'fixture.invalid'}},catatStat(){},cekBiodata(){return {}},setState(){},itemPo(){return false},shippingPayload(){return null},buatOrderId(){throw Error('must preserve existing ID')},recordOrder(...args){recorded.push(args)},waText(v){return v}};
+ const owner = {state:{cart:[{name:'Fixture',qty:1,price:100,priceLabel:'100'}],buyer:{name:'Fixture',phone:'0',email:'fixture.invalid'}},trackFunnel(){},trackWhatsapp(){},catatStat(){},cekBiodata(){return {}},setState(){},itemPo(){return false},shippingPayload(){return null},buatOrderId(){throw Error('must preserve existing ID')},recordOrder(...args){recorded.push(args)},waText(v){return v}};
  // Arrow function needs lexical this, evaluated with a bound factory.
  const bound = new Function('window','navigator','return (' + method.trim().replace(/^handleCheckout = /, '').replace(/;$/, '') + ')').call(owner,{open:u=>opened.push(u)},{});
  bound('EXISTING-ID');
@@ -25,7 +25,7 @@ function paymentHarness(fetchResult, timeoutNow=false) {
  const states=[]; const fallbacks=[]; const location={href:''};
  const owner={
   state:{cart:[{name:'A',qty:1,price:100}],buyer:{},paying:false}, props:{orderApiUrl:'https://fixture.invalid'},
-  cekBiodata(){return {}}, tandaiBiodata(){}, setState(v){states.push(v);Object.assign(this.state,v)},
+  trackFunnel(){}, trackPaymentLink(){}, cekBiodata(){return {}}, tandaiBiodata(){}, setState(v){states.push(v);Object.assign(this.state,v)},
   ongkirBiaya(){return 0}, buatOrderId(){return 'ORDER-1'}, orderPayload(){return {}},
   payFallback(...v){fallbacks.push(v)},
  };
