@@ -1,0 +1,32 @@
+[
+  {
+    "source": "01.jpeg",
+    "output": "01.webp",
+    "redacted_regions": 3
+  },
+  {
+    "source": "02.jpeg",
+    "output": "02.webp",
+    "redacted_regions": 1
+  },
+  {
+    "source": "03.jpeg",
+    "output": "03.webp",
+    "redacted_regions": 1
+  },
+  {
+    "source": "04.jpeg",
+    "output": "04.webp",
+    "redacted_regions": 1
+  },
+  {
+    "source": "05.jpeg",
+    "output": "05.webp",
+    "redacted_regions": 1
+  },
+  {
+    "source": "06.jpeg",
+    "output": "06.webp",
+    "redacted_regions": 1
+  }
+]
