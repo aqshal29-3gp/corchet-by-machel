@@ -939,6 +939,7 @@ function catatanPo(d) {
 }
 
 function handleOrder(d) {
+  const attribution = validatedAdAttribution(d.adAttribution);
   naikkanVersiTab(T_PESANAN);
   const sh = sheet(T_PESANAN);
   const now = waktuWib();
@@ -958,7 +959,7 @@ function handleOrder(d) {
     d.channel || '',
     'MENUNGGU BAYAR',
     detailQty, '', '', '', '', '', '', '',
-    now + ' | MENUNGGU BAYAR | Pesanan masuk dari website'
+    now + ' | MENUNGGU BAYAR | Pesanan masuk dari website', '', '', JSON.stringify(attribution)
   ]);
   const barisBaru = sh.getLastRow();
   try { catatPelanggan(d); } catch (err) {}
