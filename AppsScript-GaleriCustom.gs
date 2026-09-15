@@ -175,6 +175,12 @@ const EMAIL_KE_MAYAR     = P('EMAIL_KE_MAYAR', 'toko');
 // sebagai "Send mail as" di Gmail akun pemilik script (lihat Bagian 17.2c).
 const EMAIL_PENGIRIM     = P('EMAIL_PENGIRIM', '');
 const MAKS_PESANAN_HARI  = PN('MAKS_PESANAN_PER_TAMU', 12);
+// Saklar Buka/Libur toko dari tab Pengaturan. 'ya' = libur (pesanan baru
+// ditolak server + frontend mengunci checkout), 'tidak' = buka normal.
+// Diubah lewat spreadsheet tanpa deploy ulang; frontend membaca status-toko.json
+// yang disinkronkan dari sheet yang sama oleh scripts/sync-status-toko.py.
+const TOKO_LIBUR = PB('TOKO_LIBUR', 'tidak');
+const TOKO_LIBUR_PESAN = P('TOKO_LIBUR_PESAN', 'Mohon maaf, toko sedang dalam perbaikan (maintenance) sistem. Checkout untuk sementara ditutup.');
 const HARI_TIDUR         = PN('HARI_TIDUR', 90);
 // Batas waktu pembayaran. Dikirim ke Mayar sebagai expiredAt DAN disimpan di
 // kolom batas_bayar, supaya link tagihan dan status di sini mati bersamaan.
@@ -229,6 +235,7 @@ function doPost(e) {
 
     // Pesanan baru dari website
     if (data.type === 'order') {
+      if (TOKO_LIBUR) return json({ ok: false, libur: true, message: String(TOKO_LIBUR_PESAN || 'Toko sedang libur.') });
       const tolak = batasiPesanan(data);
       if (tolak) return tolak;
       return handleOrder(validasiHarga(data));
@@ -236,6 +243,7 @@ function doPost(e) {
 
     // Minta satu tagihan gabungan (beberapa produk dalam satu keranjang)
     if (data.type === 'invoice') {
+      if (TOKO_LIBUR) return json({ ok: false, libur: true, message: String(TOKO_LIBUR_PESAN || 'Toko sedang libur.') });
       const tolak = batasiPesanan(data);
       if (tolak) return tolak;
       return handleInvoice(validasiHarga(data));
@@ -327,6 +335,11 @@ function doGet(e) {
   }
   if (p.action === 'kota') return cariTujuan(p.q);
   if (p.action === 'ongkir') return hitungOngkir(p);
+
+  // Saklar Buka/Libur untuk website (publik, tanpa PIN — hanya status & pesan).
+  if (p.action === 'statusToko') {
+    return json({ ok: true, libur: !!TOKO_LIBUR, pesan: String(TOKO_LIBUR_PESAN || '') });
+  }
 
   // Feed produk untuk Google Merchant Center (ditarik terjadwal oleh Google)
   if (p.action === 'feed' || p.feed) return feedMerchant();
@@ -919,6 +932,11 @@ function batasiPesanan(d) {
 }
 
 /* ---------- 1. PESANAN BARU ---------- */
+/* Catatan merge pickup: handleOrder/handleInvoice/handlePaymentLocked memanggil
+   validatedAdAttribution, uniqueOrderRow, verifiedMayarPayment,
+   recordPurchaseConversion dari file Purchase.gs live (satu project Apps Script,
+   scope global bersama) — sama seperti Code.gs live. Jangan mendefinisikan
+   ulang di file ini supaya tidak ada deklarasi ganda saat deploy. */
 
 /** Apakah satu item pesanan berstatus pre-order (dibuat setelah dipesan)? */
 function poItem(i) {
@@ -1015,7 +1033,7 @@ function blokPickupPembeli() {
     'Pesananmu diambil langsung, tanpa ongkir.\n' +
     (ALAMAT_STUDIO
       ? 'Alamat pengambilan:\n' + ALAMAT_STUDIO + '\n'
-      : 'Alamat titik pengambilan kami kirim lewat WhatsApp.\n') +
+      : 'Lokasi akan diinfokan via WhatsApp.\n') +
     'Kabari dulu lewat WhatsApp sebelum datang ya, biar pesananmu sudah siap.\n\n';
 }
 
@@ -1163,7 +1181,10 @@ function handleInvoice(d) {
 
   // simpan link & id tagihan di kolom keterangan pesanan
   const sh = sheet(T_PESANAN);
-  const last = sh.getLastRow();
+  const bindingLock = LockService.getScriptLock();
+  bindingLock.waitLock(8000);
+  try {
+  const last = uniqueOrderRow(d.orderId);
   sh.getRange(last, 11).setValue(link);
   // transactionId TIDAK selalu ikut di balasan invoice/create. Tanpa id apa pun,
   // status tagihan tidak bisa ditanyakan ke Mayar dan pesanan menggantung di
@@ -1174,11 +1195,14 @@ function handleInvoice(d) {
     d.batasBayarTeks = Utilities.formatDate(new Date(batasMs), ZONA, 'dd/MM/yyyy HH:mm') + ' WIB';
   }
 
+  SpreadsheetApp.flush();
+  } finally { bindingLock.releaseLock(); }
+
   // satu email saja ke pembeli, sudah memuat tombol bayar
   const ringkas = (d.items || []).map(function (i) {
     return i.name + ' x' + (i.qty || 1);
   }).join('; ');
-  emailPesananDiterima(d, ringkas, waktuWib(), link);
+  if (!d.emailNanti) emailPesananDiterima(d, ringkas, waktuWib(), link);
 
   return json({ ok: true, link: link, orderId: d.orderId });
 }
@@ -2105,6 +2129,16 @@ function cariBarisPesanan(d) {
 }
 
 function handlePayment(d) {
+  const lock = LockService.getScriptLock();
+  try { lock.waitLock(8000); } catch (err) {
+    return json({ ok: false, message: 'Sistem sedang memproses pembayaran lain. Coba lagi.' });
+  }
+  try {
+    return handlePaymentLocked(d);
+  } finally { try { lock.releaseLock(); } catch (e) {} }
+}
+
+function handlePaymentLocked(d) {
   naikkanVersiTab(T_PESANAN);
   const cari = cariBarisPesanan(d);
   const baris = cari.baris;
@@ -2121,10 +2155,11 @@ function handlePayment(d) {
   if (stSekarang === 'BATAL' || stSekarang === 'KEDALUWARSA')
     return json({ ok: false, message: 'Pesanan sudah ' + stSekarang + ', pembayaran diabaikan' });
 
-  // PENGAMAN 1: tanya langsung ke server Mayar, jangan percaya webhook saja.
-  // paksa = admin sendiri yang menyatakan lunas (menu Ubah status) -> lewati pemeriksaan.
-  const paksa = d.paksa === true;
-  const cek = paksa ? true : konfirmasiKeMayar(cari.trxId || sh.getRange(baris, 12).getValue());
+  // Webhook values (including paksa) are never payment evidence.
+  const paksa = false;
+  const storedTrx = String(sh.getRange(baris, 12).getValue() || '').trim();
+  const storedTotal = Number(sh.getRange(baris, 7).getValue());
+  const cek = verifiedMayarPayment(storedTrx, storedTotal);
   if (cek === false) {
     catatWebhookMeragukan(d, orderId, 'Server Mayar bilang BELUM lunas — diabaikan');
     return json({ ok: false, message: 'Belum lunas menurut server pembayaran, diabaikan' });
@@ -2134,7 +2169,7 @@ function handlePayment(d) {
   // dilunaskan oleh event webhook yang khusus untuk pembayaran berhasil.
   // Tanpa ini, balasan berbunyi "success" (= permintaan berhasil) bisa
   // membuat pesanan jadi LUNAS dan email lunas terkirim sebelum uang masuk.
-  const tegas = paksa || RE_EVENT_LUNAS.test(String(d.event || '').toLowerCase());
+  const tegas = RE_EVENT_LUNAS.test(String(d.event || '').toLowerCase());
   if (cek !== true && !tegas) {
     catatWebhookMeragukan(d, orderId,
       'Pembayaran belum terbukti (server tidak memastikan, event tidak tegas) — status & email pembeli TIDAK diubah');
@@ -2150,14 +2185,8 @@ function handlePayment(d) {
     return json({ ok: false, message: 'Pembayaran belum bisa dipastikan — pesanan dibiarkan MENUNGGU BAYAR' });
   }
 
-  // nominal harus cocok kalau penyedia mengirimkannya
-  const totalPesanan = parseInt(String(sh.getRange(baris, 7).getValue()).replace(/[^0-9]/g, ''), 10) || 0;
-  if (!paksa && cari.jumlah > 0 && totalPesanan > 0 && Math.abs(cari.jumlah - totalPesanan) > 1000) {
-    catatWebhookMeragukan(d, orderId, 'Nominal tidak cocok: bayar ' + cari.jumlah + ' vs tagihan ' + totalPesanan);
-    return json({ ok: false, message: 'Nominal pembayaran tidak cocok, diabaikan' });
-  }
-
   setStatus(baris, 'LUNAS', 'Pembayaran diterima (' + labelEvent(d) + ', cocok lewat ' + cari.cara + ')');
+  try { recordPurchaseConversion(sh.getRange(baris, 2).getValue()); } catch (err) {}
   try { perbaruiPelangganDariBaris(baris); } catch (err) {}
 
   // kurangi stok sesuai kolom detail (nama=qty;nama=qty)
@@ -2320,7 +2349,7 @@ function promptUbahStatus() {
       'No. Pesanan : ' + id + '\n' +
       'Produk      : ' + sh.getRange(baris, 6).getValue() + '\n' +
       (pickup
-        ? (ALAMAT_STUDIO ? 'Alamat ambil : ' + String(ALAMAT_STUDIO).replace(/\n/g, ', ') + '\n' : '')
+        ? (ALAMAT_STUDIO ? 'Alamat ambil : ' + String(ALAMAT_STUDIO).replace(/\n/g, ', ') + '\n' : 'Lokasi akan diinfokan via WhatsApp.\n')
         : (resi ? 'Kurir       : ' + kurir.toUpperCase() + '\nNo. Resi    : ' + resi + '\n' : '')) +
       (linkLacak(id) ? '\nLacak pesananmu kapan saja di:\n' + linkLacak(id) + '\n' : '') + '\n' +
       'Salam hangat,\n' + NAMA_TOKO
@@ -3788,6 +3817,8 @@ const DAFTAR_SETTING = [
   ['EMAIL_BALASAN', '', 'Alamat balasan yang dilihat pembeli. Kosong = pakai email pertama di atas'],
   ['EMAIL_PENGIRIM', '', 'Alamat pengirim yang dilihat pembeli. WAJIB sudah didaftarkan "Send mail as" di Gmail pemilik script'],
   ['NOMOR_WA', '6281285006165', 'Format 62… — dipakai asisten chat saat pelanggan minta kontak'],
+  ['TOKO_LIBUR', 'tidak', 'Saklar Buka/Libur toko. tidak = buka, ya = libur (checkout dikunci). Tanpa deploy ulang'],
+  ['TOKO_LIBUR_PESAN', 'Mohon maaf, toko sedang dalam perbaikan (maintenance) sistem. Checkout untuk sementara ditutup.', 'Pesan banner & checkout saat TOKO_LIBUR = ya'],
   ['INSTAGRAM', 'machel.crochet', 'Tanpa tanda @'],
   ['URL_WEBSITE', '', 'Alamat websitemu, mis. https://crochetbymachel.com'],
 
@@ -4161,4 +4192,22 @@ function kirimEmailPembeli(email, subjek, isi, opsi) {
   } catch (err) {
     try { MailApp.sendEmail({ to: email, subject: subjek, body: isi, name: NAMA_TOKO }); } catch (e2) {}
   }
+}
+
+function handleKirimEmailSaja(d) {
+  const sh = sheet(T_PESANAN);
+  const row = uniqueOrderRow(d.orderId);
+  if (row < 2) return json({ ok: false, msg: 'Pesanan tidak ditemukan' });
+  
+  const link = String(sh.getRange(row, 11).getValue() || '');
+  const email = String(sh.getRange(row, 5).getValue() || '');
+  const nama = String(sh.getRange(row, 2).getValue() || 'Kak');
+  const items = String(sh.getRange(row, 18).getValue() || ''); // Rincian di kolom R (18)
+  
+  const fakeD = { buyer: { email: email, name: nama }, orderId: d.orderId };
+  
+  if (email && email.indexOf('@') > 0) {
+    emailPesananDiterima(fakeD, items, waktuWib(), link);
+  }
+  return json({ ok: true });
 }
