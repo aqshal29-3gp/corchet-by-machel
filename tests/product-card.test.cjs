@@ -15,7 +15,7 @@ test('live product card uses the approved compact menu-card design', () => {
 
 test('live product card preserves catalog detail and cart hooks', () => {
   assert.match(html, /<sc-for list="\{\{ sheetItems \}\}" as="it"/);
-  assert.match(html, /sc-camel-on-click="\{\{ addToCart \}\}"[^>]*aria-label="Tambah ke keranjang"/);
+  assert.match(html, /sc-camel-on-click="\{\{ it\.add \}\}"[^>]*aria-label="Tambah ke keranjang"/);
   assert.match(html, /sc-camel-on-click="\{\{ it\.buka \}\}"[^>]*class="product-card-name"/);
   assert.match(html, /\{\{ it\.stockLabel \}\}/);
   assert.match(html, /\{\{ it\.priceLabel \}\}/);
