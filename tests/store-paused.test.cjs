@@ -23,9 +23,10 @@ function methodBody(marker) {
 }
 
 test('LIBUR flag exists as a single source of truth', () => {
-  // class field declaration: `LIBUR = true;` (referenced as this.LIBUR elsewhere)
-  assert.match(decoded, /\bLIBUR\s*=\s*true\s*;/, 'expected a LIBUR = true class field');
-  assert.ok(decoded.includes(MSG), 'LIBUR_MSG must carry the operator-approved pause copy');
+  // class field declaration: `LIBUR = false;` while the store is OPEN
+  // (referenced as this.LIBUR elsewhere). Flip to `true` to pause again.
+  assert.match(decoded, /\bLIBUR\s*=\s*false\s*;/, 'expected a LIBUR = false class field (store open)');
+  assert.ok(decoded.includes(MSG), 'LIBUR_MSG must still carry the operator-approved pause copy for reuse');
 });
 
 test('order-initiation methods hard-block when LIBUR is true', () => {
