@@ -122,6 +122,10 @@ const EMAIL_OWNER = P('EMAIL_OWNER', '');
 const EMAIL_BALASAN = P('EMAIL_BALASAN', '');
 const NAMA_TOKO   = P('NAMA_TOKO', 'Crochet by Machel');
 const NOMOR_WA    = P('NOMOR_WA', '6281285006165');
+// Alamat titik ambil sendiri (pickup). Diberikan ke pembeli lewat email setelah
+// pesanan LUNAS, dan saat status pesanan pickup masuk tahap "siap diambil".
+// Kosongkan untuk memakai teks bawaan (arahkan ke WhatsApp).
+const ALAMAT_STUDIO = P('ALAMAT_STUDIO', '');
 const INSTAGRAM   = P('INSTAGRAM', 'machel.crochet');
 const MERCHANT_SHEET_ID = P('MERCHANT_SHEET_ID', '');
 const MERCHANT_BRAND    = P('MERCHANT_BRAND', '');
@@ -872,12 +876,21 @@ function validasiHarga(d) {
 
   // ongkir juga diperiksa
   if (d.shipping) {
-    let biaya = parseInt(String(d.shipping.biaya).replace(/[^0-9]/g, ''), 10) || 0;
-    const belanja = (d.items || []).reduce(function (t, i) { return t + i.price * i.qty; }, 0);
-    const gratis = ONGKIR_GRATIS_MIN > 0 && belanja >= ONGKIR_GRATIS_MIN;
-    if (!RAJAONGKIR_API_KEY) biaya = gratis ? 0 : ONGKIR_FLAT; // mode flat: nilai dipaksa dari pengaturan
-    if (biaya < 0) biaya = 0;
-    d.shipping.biaya = biaya;
+    if (isPickup(d.shipping)) {
+      // Ambil sendiri: tidak ada ongkir apa pun. Jangan pernah dipaksa ke tarif flat.
+      d.shipping.biaya = 0;
+      d.shipping.kurir = 'PICKUP';
+      d.shipping.layanan = d.shipping.layanan || 'Ambil Sendiri';
+      d.shipping.alamat = '';
+      d.shipping.tujuan = '';
+    } else {
+      let biaya = parseInt(String(d.shipping.biaya).replace(/[^0-9]/g, ''), 10) || 0;
+      const belanja = (d.items || []).reduce(function (t, i) { return t + i.price * i.qty; }, 0);
+      const gratis = ONGKIR_GRATIS_MIN > 0 && belanja >= ONGKIR_GRATIS_MIN;
+      if (!RAJAONGKIR_API_KEY) biaya = gratis ? 0 : ONGKIR_FLAT; // mode flat: nilai dipaksa dari pengaturan
+      if (biaya < 0) biaya = 0;
+      d.shipping.biaya = biaya;
+    }
   }
 
   // total dihitung ulang di server, bukan diambil dari browser
@@ -988,6 +1001,24 @@ function handleOrder(d) {
 }
 
 /**
+ * Apakah pesanan ini opsi "ambil sendiri" (pickup)? Ditandai kurir = PICKUP
+ * yang dikirim website saat pembeli memilih ambil sendiri (ongkir Rp0).
+ */
+function isPickup(kirim) {
+  return !!kirim && String(kirim.kurir || '').trim().toUpperCase() === 'PICKUP';
+}
+
+/** Blok alamat studio untuk email pembeli pickup. '' kalau bukan pickup. */
+function blokPickupPembeli() {
+  return '= Pengambilan (Ambil Sendiri) =\n' +
+    'Pesananmu diambil langsung, tanpa ongkir.\n' +
+    (ALAMAT_STUDIO
+      ? 'Alamat pengambilan:\n' + ALAMAT_STUDIO + '\n'
+      : 'Alamat titik pengambilan kami kirim lewat WhatsApp.\n') +
+    'Kabari dulu lewat WhatsApp sebelum datang ya, biar pesananmu sudah siap.\n\n';
+}
+
+/**
  * Blok alamat pengiriman untuk email OWNER.
  *
  * Sebelumnya email ke owner sama sekali tidak mencetak alamat, padahal data
@@ -997,6 +1028,7 @@ function handleOrder(d) {
  * adanya ke label pengiriman.
  */
 function blokPengirimanOwner(kirim) {
+  if (isPickup(kirim)) return 'PENGAMBILAN: AMBIL SENDIRI (PICKUP)\nPembeli mengambil pesanan langsung, tanpa pengiriman kurir.\n\n';
   if (!kirim) return 'ALAMAT KIRIM: (pembeli tidak mengisi alamat)\n\n';
   const alamat = String(kirim.alamat || '').trim();
   if (!alamat) return 'ALAMAT KIRIM: (pembeli tidak mengisi alamat)\n\n';
@@ -1038,12 +1070,14 @@ function emailPesananDiterima(d, items, waktu, linkBayar) {
     'Subtotal produk : Rp' + produk.toLocaleString('id-ID') + '\n' +
     (ongkir ? 'Ongkos kirim : Rp' + ongkir.toLocaleString('id-ID') + '\n' : '') +
     'Total bayar : Rp' + Number(d.total || 0).toLocaleString('id-ID') + '\n\n' +
-    (kirim.alamat
-      ? '= Pengiriman =\n' +
-        'Tujuan : ' + (kirim.tujuan || '-') + '\n' +
-        (kirim.layanan ? 'Layanan : ' + kirim.layanan + '\n' : '') +
-        'Alamat : ' + String(kirim.alamat).replace(/\n/g, ', ') + '\n\n'
-      : '') +
+    (isPickup(kirim)
+      ? blokPickupPembeli()
+      : (kirim.alamat
+        ? '= Pengiriman =\n' +
+          'Tujuan : ' + (kirim.tujuan || '-') + '\n' +
+          (kirim.layanan ? 'Layanan : ' + kirim.layanan + '\n' : '') +
+          'Alamat : ' + String(kirim.alamat).replace(/\n/g, ', ') + '\n\n'
+        : '')) +
     (linkBayar
       ? 'Selesaikan pembayaran lewat tombol di bawah. Tersedia QRIS, GoPay, ShopeePay, DANA, dan transfer bank.\n\n' +
         '[[Bayar Sekarang]] ' + linkBayar + '\n\n' +
@@ -2138,6 +2172,8 @@ function handlePayment(d) {
   });
 
   // email konfirmasi ke pembeli: pembayaran diterima
+  var kurirBaris = String(sh.getRange(baris, 16).getValue() || '');
+  var pickupBaris = kurirBaris.trim().toUpperCase().indexOf('PICKUP') === 0;
   kirimEmailPembeli(
     String(sh.getRange(baris, 5).getValue() || ''),
     'Pembayaran diterima · ' + sh.getRange(baris, 2).getValue() + ' — ' + NAMA_TOKO,
@@ -2148,9 +2184,12 @@ function handlePayment(d) {
     'Total       : Rp' + Number(sh.getRange(baris, 7).getValue() || 0).toLocaleString('id-ID') + '\n' +
     'Waktu bayar : ' + waktuWib() + '\n\n' +
     'Status: LUNAS — pesananmu masuk antrean pengerjaan.\n' +
-    'Kami akan mengabari lewat WhatsApp saat boneka mulai dirajut dan saat siap dikirim.\n' +
+    (pickupBaris
+      ? 'Kami akan mengabari lewat WhatsApp saat boneka mulai dirajut dan saat sudah siap diambil.\n\n' +
+        blokPickupPembeli()
+      : 'Kami akan mengabari lewat WhatsApp saat boneka mulai dirajut dan saat siap dikirim.\n') +
     (linkLacak(sh.getRange(baris, 2).getValue()) ? '\nLacak pesananmu kapan saja di:\n' + linkLacak(sh.getRange(baris, 2).getValue()) + '\n' : '') +
-    'Setelah pesanan sampai, kami kirim satu email singkat berisi link untuk menulis ulasan — hanya butuh 30 detik.\n\n' +
+    'Setelah pesanan ' + (pickupBaris ? 'diambil' : 'sampai') + ', kami kirim satu email singkat berisi link untuk menulis ulasan — hanya butuh 30 detik.\n\n' +
     'Terima kasih sudah memilih handmade.\n\n' +
     'Salam hangat,\n' + NAMA_TOKO
   );
@@ -2166,6 +2205,7 @@ function handlePayment(d) {
     blokPengirimanOwner({
       alamat: sh.getRange(baris, 14).getValue(),
       biaya: sh.getRange(baris, 15).getValue(),
+      kurir: sh.getRange(baris, 16).getValue(),
       layanan: sh.getRange(baris, 16).getValue()
     }) +
     'No. HP  : ' + (sh.getRange(baris, 4).getValue() || '-') + '\n\n' +
@@ -2204,6 +2244,15 @@ const PESAN_TAHAP = {
   'SELESAI':    { judul: 'Pesananmu sudah sampai', isi: 'Menurut catatan kami pesananmu sudah diterima. Semoga suka ya!' }
 };
 
+// Untuk pesanan AMBIL SENDIRI (pickup): tahap "SIAP KIRIM" berarti pesanan sudah
+// siap diambil, dan "DIKIRIM"/"SELESAI" berarti pesanan sudah diambil / selesai.
+const PESAN_TAHAP_PICKUP = {
+  'DIRAJUT':    { judul: 'Pesananmu mulai dirajut', isi: 'Kabar baik! Boneka pesananmu sudah mulai dikerjakan. Karena dirajut satu per satu dengan tangan, kami mengerjakannya dengan teliti supaya hasilnya rapi.' },
+  'SIAP KIRIM': { judul: 'Pesananmu sudah bisa diambil', isi: 'Boneka pesananmu sudah selesai dan siap diambil. Silakan kabari kami lewat WhatsApp untuk mengatur waktu pengambilan ya.' },
+  'DIKIRIM':    { judul: 'Pesananmu sudah diambil', isi: 'Menurut catatan kami pesananmu sudah diambil. Terima kasih ya, semoga suka!' },
+  'SELESAI':    { judul: 'Pesananmu selesai', isi: 'Menurut catatan kami pesananmu sudah diambil dan selesai. Semoga suka ya!' }
+};
+
 /** Menu: ubah status satu pesanan + kirim email otomatis ke pembeli. */
 function promptUbahStatus() {
   const ui = SpreadsheetApp.getUi();
@@ -2221,8 +2270,8 @@ function promptUbahStatus() {
     'Ketik salah satu:\n\n' +
     '1 = LUNAS (pembayaran sudah kamu terima manual)\n' +
     '2 = DIRAJUT (mulai dikerjakan)\n' +
-    '3 = SIAP KIRIM (selesai, siap diserahkan kurir)\n' +
-    '4 = DIKIRIM (sudah diserahkan ke kurir)\n' +
+    '3 = SIAP KIRIM (selesai, siap diserahkan kurir / siap diambil untuk pesanan pickup)\n' +
+    '4 = DIKIRIM (sudah diserahkan ke kurir / sudah diambil untuk pesanan pickup)\n' +
     '5 = SELESAI (sudah diterima pembeli)\n' +
     '0 = BATAL (stok dikembalikan)\n\n' +
     'Status sekarang: ' + rows[baris - 1][8], ui.ButtonSet.OK_CANCEL);
@@ -2244,7 +2293,12 @@ function promptUbahStatus() {
       : 'Tidak bisa ditandai lunas: ' + ((jawab && jawab.message) || 'tanpa keterangan'));
   }
 
-  if (status === 'DIKIRIM') {
+  // Deteksi pickup dari kolom kurir (16). Pesanan pickup tidak butuh resi;
+  // makna tahap "SIAP KIRIM" jadi "bisa diambil" dan "DIKIRIM" jadi "sudah diambil".
+  const kurirTersimpan = String(sh.getRange(baris, 16).getValue() || '');
+  const pickup = kurirTersimpan.trim().toUpperCase().indexOf('PICKUP') === 0;
+
+  if (status === 'DIKIRIM' && !pickup) {
     const c = ui.prompt('Data pengiriman', 'Ketik: kurir,nomor resi\n\nContoh: jne,JNE1234567890\n\nKurir yang didukung: jne, jnt, sicepat, anteraja, pos, tiki, ninja, wahana, lion, sap, ide, spx (shopee express)', ui.ButtonSet.OK_CANCEL);
     if (c.getSelectedButton() !== ui.Button.OK) return;
     const bagian = c.getResponseText().split(',');
@@ -2254,7 +2308,7 @@ function promptUbahStatus() {
 
   setStatus(baris, status, 'Diubah manual dari spreadsheet');
 
-  const pesan = PESAN_TAHAP[status];
+  const pesan = (pickup && PESAN_TAHAP_PICKUP[status]) || PESAN_TAHAP[status];
   if (pesan) {
     const kurir = String(sh.getRange(baris, 16).getValue() || '');
     const resi = String(sh.getRange(baris, 17).getValue() || '');
@@ -2264,7 +2318,9 @@ function promptUbahStatus() {
       'Hai ' + sh.getRange(baris, 3).getValue() + ',\n\n' + pesan.isi + '\n\n' +
       'No. Pesanan : ' + id + '\n' +
       'Produk      : ' + sh.getRange(baris, 6).getValue() + '\n' +
-      (resi ? 'Kurir       : ' + kurir.toUpperCase() + '\nNo. Resi    : ' + resi + '\n' : '') +
+      (pickup
+        ? (ALAMAT_STUDIO ? 'Alamat ambil : ' + String(ALAMAT_STUDIO).replace(/\n/g, ', ') + '\n' : '')
+        : (resi ? 'Kurir       : ' + kurir.toUpperCase() + '\nNo. Resi    : ' + resi + '\n' : '')) +
       (linkLacak(id) ? '\nLacak pesananmu kapan saja di:\n' + linkLacak(id) + '\n' : '') + '\n' +
       'Salam hangat,\n' + NAMA_TOKO
     );
