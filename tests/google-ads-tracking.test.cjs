@@ -10,7 +10,7 @@ const sitemap = fs.readFileSync(path.join(__dirname, '..', 'sitemap.xml'), 'utf8
 
 test('Google tag uses the configured Ads account and live labels', () => {
   assert.match(template, /&quot;default&quot;:&quot;AW-18411445297&quot;/);
-  assert.match(template, /&quot;default&quot;:&quot;OM28CPLfoegcELG4octE&quot;/);
+  assert.match(template, /&quot;default&quot;:&quot;hL8JCJ7h7vwcELG4octE&quot;/);
   assert.match(template, /&quot;default&quot;:&quot;o_o7COG_w-gcELG4octE&quot;/);
   assert.match(template, /window\.gtag\("config", id\)/);
   assert.match(template, /googletagmanager\.com\/gtag\/js\?id=/);
