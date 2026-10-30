@@ -22,3 +22,4 @@ apps-script-konektor.gs
 
 # Alat bantu lokal (penambal template, dsb) - bukan bagian dari website.
 alat/
+.venv-sync/

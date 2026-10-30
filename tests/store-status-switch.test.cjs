@@ -13,12 +13,15 @@ const decoded = JSON.parse(
 );
 const gs = fs.readFileSync(path.join(ROOT, 'AppsScript-GaleriCustom.gs'), 'utf8');
 
-test('frontend fetches status-toko.json with fail-open default', () => {
-  assert.ok(decoded.includes('fetch("status-toko.json"'), 'must fetch status-toko.json');
+test('frontend reads status toko from the Apps Script endpoint, fail-open default', () => {
   assert.ok(decoded.includes('loadStatusToko'), 'loader must exist');
   assert.ok(decoded.includes('this.loadStatusToko();'), 'must be called on mount');
-  // fail-open: no libur flag in file/response => LIBUR stays false
+  // sumber status sekarang endpoint dinamis, bukan file statis
+  assert.match(decoded, /action=statusToko/, 'must query action=statusToko');
+  assert.ok(decoded.includes('cache:"no-store"'), 'status must not be cached');
+  // fail-open: LIBUR default false, error diabaikan
   assert.match(decoded, /\bLIBUR\s*=\s*false\s*;/, 'LIBUR default must stay false (fail-open)');
+  assert.match(decoded, /\.catch\(\(\)\s*=>\s*\{\s*\}\);/, 'fetch errors must be swallowed (fail-open)');
 });
 
 test('status-toko.json exists, valid, libur=false default', () => {
