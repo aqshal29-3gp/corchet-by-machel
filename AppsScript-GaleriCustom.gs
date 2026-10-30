@@ -85,6 +85,13 @@ function naikkanVersiTab(nama) {
 var _cfg = null;
 function CFG() {
   if (_cfg) return _cfg;
+  // Cache 2 menit: tab Pengaturan tidak perlu dibaca ulang di setiap request.
+  // adminSave() menaikkan versi tab, jadi perubahan dari panel langsung terpakai.
+  const kunciCache = 'cfg_' + versiTab('Pengaturan');
+  try {
+    const teks = CacheService.getScriptCache().get(kunciCache);
+    if (teks) { _cfg = JSON.parse(teks); return _cfg; }
+  } catch (err) {}
   const map = {};
   try {
     const ss = SPREADSHEET_ID
@@ -98,6 +105,7 @@ function CFG() {
     }
   } catch (err) {}
   _cfg = map;
+  try { CacheService.getScriptCache().put(kunciCache, JSON.stringify(map), 120); } catch (err) {}
   return map;
 }
 function P(k, bawaan) {
@@ -1741,139 +1749,357 @@ function statusAi() {
 
 /* ---------- 1e. ASISTEN CHAT WEBSITE (gratis) ---------- */
 
-function panggilGeminiTeks(prompt, maxToken) {
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_TEXT_MODEL +
+/**
+ * Satu percobaan ke satu model. Melempar error kalau tidak ada teks sama sekali.
+ */
+function panggilSatuModel(model, prompt, maxToken) {
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model +
     ':generateContent?key=' + encodeURIComponent(GEMINI_API_KEY);
-  const res = UrlFetchApp.fetch(url, {
-    method: 'post',
-    contentType: 'application/json',
-    payload: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.7,
-        // dilebihkan karena model generasi baru memakai token "berpikir"
-        maxOutputTokens: (maxToken || 400) * 4,
-        // matikan mode berpikir supaya seluruh kuota dipakai untuk jawaban
-        thinkingConfig: { thinkingBudget: 0 }
-      }
-    }),
-    muteHttpExceptions: true
+  const batas = Math.max(120, Math.min(400, (maxToken || 160) * 2));
+  const body = {
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.6,
+      maxOutputTokens: batas,
+      // matikan mode berpikir: jawaban pendek jadi jauh lebih cepat
+      thinkingConfig: { thinkingBudget: 0 }
+    }
+  };
+  let res = UrlFetchApp.fetch(url, {
+    method: 'post', contentType: 'application/json',
+    payload: JSON.stringify(body), muteHttpExceptions: true
   });
   let out = JSON.parse(res.getContentText() || '{}');
+
+  // sebagian model menolak thinkingConfig -> ulangi tanpa opsi itu
+  if (!out.candidates && out.error && /thinking|unknown name|invalid/i.test(out.error.message || '')) {
+    delete body.generationConfig.thinkingConfig;
+    res = UrlFetchApp.fetch(url, {
+      method: 'post', contentType: 'application/json',
+      payload: JSON.stringify(body), muteHttpExceptions: true
+    });
+    out = JSON.parse(res.getContentText() || '{}');
+  }
+
   const cand = out && out.candidates && out.candidates[0];
   const parts = cand && cand.content && cand.content.parts;
   let teks = '';
   (parts || []).forEach(function (p) { if (p.text) teks += p.text; });
 
-  // model menolak thinkingConfig -> coba ulang tanpa opsi itu
-  if (!teks && out.error && /thinking|unknown name|invalid/i.test(out.error.message || '')) {
-    const res2 = UrlFetchApp.fetch(url, {
-      method: 'post',
-      contentType: 'application/json',
-      payload: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: (maxToken || 400) * 4 }
-      }),
-      muteHttpExceptions: true
-    });
-    out = JSON.parse(res2.getContentText() || '{}');
-    const p2 = out.candidates && out.candidates[0] && out.candidates[0].content && out.candidates[0].content.parts;
-    (p2 || []).forEach(function (p) { if (p.text) teks += p.text; });
-  }
+  // Jawaban yang terpotong batas token tetap dipakai selama ada isinya —
+  // lebih baik kalimat terakhir hilang daripada pelanggan tidak dapat jawaban.
+  if (teks.trim()) return teks.trim();
 
-  if (!teks) {
-    const alasan = (cand && cand.finishReason) || (out.error && out.error.message) || 'tidak ada jawaban';
-    if (/MAX_TOKENS/i.test(alasan)) throw new Error('Jawaban terpotong (MAX_TOKENS). Coba model lain, mis. gemini-3.1-flash-lite.');
-    throw new Error(alasan);
-  }
-  return teks.trim();
+  const alasan = (out.error && out.error.message) || (cand && cand.finishReason) || 'tidak ada jawaban';
+  throw new Error(model + ': ' + alasan);
 }
 
-function ringkasKatalog(maksBaris) {
+/**
+ * Memanggil model teks dengan rantai cadangan.
+ *
+ * Model utama diambil dari Pengaturan (GEMINI_TEXT_MODEL). Kalau model itu
+ * sedang bermasalah atau namanya sudah tidak tersedia, otomatis pindah ke
+ * cadangan supaya chat tidak mati.
+ */
+function panggilGeminiTeks(prompt, maxToken) {
+  const kandidat = [GEMINI_TEXT_MODEL, 'gemini-3-flash-preview', 'gemini-3.1-flash-lite']
+    .filter(function (m, i, a) { return m && a.indexOf(m) === i; });
+  let pesan = 'tidak ada jawaban';
+  for (let i = 0; i < kandidat.length; i++) {
+    try {
+      return panggilSatuModel(kandidat[i], prompt, maxToken);
+    } catch (err) {
+      pesan = String(err.message || err);
+    }
+  }
+  throw new Error(pesan);
+}
+
+/**
+ * Data katalog untuk asisten chat, di-cache sampai isi tab Produk berubah.
+ *
+ * Dipakai dua-duanya: menyusun prompt dan menjawab pertanyaan produk langsung
+ * tanpa memanggil model (lebih cepat, lebih akurat, dan hemat kuota).
+ */
+function katalogData() {
+  const kunci = 'chat_data_' + versiTab(T_PRODUK);
+  const tersimpan = cacheAmbil(kunci);
+  if (tersimpan && tersimpan.length) return tersimpan;
+
   const rows = sheet(T_PRODUK).getDataRange().getValues();
-  if (rows.length < 2) return '(katalog kosong)';
+  if (rows.length < 2) return [];
   const head = rows[0].map(function (h) { return String(h).toLowerCase().trim(); });
-  const c = {
+  const kol = {
     kategori: head.indexOf('kategori'), nama: head.indexOf('nama'), harga: head.indexOf('harga'),
     stok: head.indexOf('stok'), custom: head.indexOf('custom'), desk: head.indexOf('deskripsi')
   };
-  return rows.slice(1, 1 + (maksBaris || 40)).filter(function (r) { return String(r[c.nama] || '').trim(); })
-    .map(function (r) {
-      return '- ' + r[c.nama] +
-        ' | kategori: ' + (r[c.kategori] || '-') +
-        ' | harga: Rp' + Number(String(r[c.harga]).replace(/[^0-9]/g, '') || 0).toLocaleString('id-ID') +
-        ' | stok: ' + (r[c.stok] || '-') +
-        ' | bisa custom: ' + (String(r[c.custom]).toLowerCase() === 'ya' ? 'ya (pre-order)' : 'tidak') +
-        (c.desk > -1 && r[c.desk] ? ' | ' + String(r[c.desk]).slice(0, 90) : '');
-    }).join('\n');
+  const dasar = dasarWebsite();
+  const out = [];
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const nama = String(kol.nama > -1 ? r[kol.nama] : '').trim();
+    if (!nama) continue;
+    const harga = Number(String(kol.harga > -1 ? r[kol.harga] : '').replace(/[^0-9]/g, '')) || 0;
+    const stok = parseInt(String(kol.stok > -1 ? r[kol.stok] : '').replace(/[^0-9-]/g, ''), 10) || 0;
+    out.push({
+      nama: nama,
+      harga: harga,
+      stok: stok,
+      ready: stok > 0,
+      custom: kol.custom > -1 && String(r[kol.custom]).toLowerCase().trim() === 'ya',
+      kategori: kol.kategori > -1 ? String(r[kol.kategori] || '').trim() : '',
+      desk: kol.desk > -1 ? String(r[kol.desk] || '').trim() : '',
+      link: dasar ? dasar + '/?produk=' + encodeURIComponent(slugProduk(nama)) : ''
+    });
+  }
+  out.sort(function (a, b) { return (b.ready ? 1 : 0) - (a.ready ? 1 : 0); });
+  cacheSimpan(kunci, out, 900);
+  return out;
+}
+
+/** Katalog sebagai teks untuk prompt. Seluruh produk ikut, tanpa terpotong. */
+function katalogChat() {
+  const daftar = katalogData();
+  if (!daftar.length) return '(katalog kosong)';
+  const siap = daftar.filter(function (x) { return x.ready; }).length;
+  const baris = daftar.map(function (p) {
+    return '- ' + p.nama + ' | Rp' + p.harga.toLocaleString('id-ID') +
+      ' | ' + (p.ready ? 'READY (stok ' + p.stok + ')' : 'PRE-ORDER') +
+      ' | ' + (p.custom ? 'bisa custom' : 'desain tetap') +
+      (p.kategori ? ' | ' + p.kategori : '') +
+      (p.link ? ' | ' + p.link : '');
+  });
+  return 'Total ' + daftar.length + ' produk: ' + siap + ' ready, ' +
+    (daftar.length - siap) + ' pre-order.\n' + baris.join('\n');
+}
+
+/** Fakta toko (ongkir, alamat, pembayaran, kontak) untuk prompt chat. */
+function infoTokoChat(versi) {
+  const kunci = 'chat_toko_' + (versi || versiTab(T_SETTING));
+  const tersimpan = cacheAmbil(kunci);
+  if (tersimpan) return tersimpan;
+
+  const b = [];
+  b.push('- Toko: ' + (NAMA_TOKO || 'Crochet by Machel') + ' — rajutan handmade, dibuat di Indonesia');
+  if (dasarWebsite()) b.push('- Website: ' + dasarWebsite() + ' (katalog, galeri, dan checkout ada di sana)');
+  if (NOMOR_WA) {
+    b.push('- WhatsApp: ' + String(NOMOR_WA).replace(/^62/, '0') +
+      ' — tombol hijau WhatsApp ada di bawah kotak chat ini');
+  }
+  if (INSTAGRAM) b.push('- Instagram: @' + String(INSTAGRAM).replace(/^@/, ''));
+  if (ALAMAT_STUDIO) b.push('- Alamat studio: ' + ALAMAT_STUDIO);
+  if (ONGKIR_FLAT > 0) {
+    const kurir = String(ONGKIR_KURIR || '').split(':').filter(String)
+      .map(function (k) { return k.toUpperCase(); }).join(', ');
+    b.push('- Ongkir: dihitung otomatis saat checkout, patokan awalnya Rp' +
+      ONGKIR_FLAT.toLocaleString('id-ID') + ' per paket' + (kurir ? ' (kurir ' + kurir + ')' : ''));
+  }
+  if (ONGKIR_GRATIS_MIN > 0) {
+    b.push('- Gratis ongkir untuk belanja minimal Rp' + ONGKIR_GRATIS_MIN.toLocaleString('id-ID'));
+  }
+  b.push('- Pembayaran: QRIS, GoPay/DANA/ShopeePay, kartu debit/kredit, dan transfer virtual account');
+  b.push('- Semua produk handmade. Stok 0 berarti PRE-ORDER: dikerjakan setelah pesanan masuk, bukan barang siap kirim');
+  b.push('- Bisa request bentuk lain dari foto referensi (custom order)');
+  if (TOKO_LIBUR) b.push('- Status: toko sedang LIBUR. ' + TOKO_LIBUR_PESAN);
+  const hasil = b.join('\n');
+  cacheSimpan(kunci, hasil, 3600);
+  return hasil;
+}
+
+/** Huruf kecil, tanpa tanda baca — untuk pencocokan kata kunci. */
+function rapikanTeks(s) {
+  return String(s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/** Produk yang paling mungkin dimaksud pelanggan, atau null. */
+function cariProduk(pesan) {
+  const tanya = ' ' + rapikanTeks(pesan) + ' ';
+  const daftar = katalogData();
+  let terbaik = null, skor = 0;
+  for (let i = 0; i < daftar.length; i++) {
+    const nama = rapikanTeks(daftar[i].nama);
+    if (!nama) continue;
+    if (tanya.indexOf(' ' + nama + ' ') > -1) return daftar[i];
+    const kata = nama.split(' ').filter(function (k) { return k.length >= 3; });
+    let cocok = 0;
+    for (let j = 0; j < kata.length; j++) if (tanya.indexOf(' ' + kata[j] + ' ') > -1) cocok++;
+    if (!kata.length || !cocok) continue;
+    const nilai = cocok / kata.length;
+    if (nilai > skor && (kata.length === 1 || cocok >= 2)) { skor = nilai; terbaik = daftar[i]; }
+  }
+  return terbaik;
+}
+
+/** Satu produk menjadi jawaban siap kirim. */
+function jawabProduk(p, pesan) {
+  const t = rapikanTeks(pesan);
+  const bagian = [p.nama + ': Rp' + p.harga.toLocaleString('id-ID') + ', ' +
+    (p.ready ? 'READY (stok ' + p.stok + ', bisa langsung dikirim)' : 'PRE-ORDER (dibuat setelah pesanan masuk)') + '.'];
+  if (/\b(pesan|beli|order|checkout|link|beli|mau)\b/.test(t) && p.link) {
+    bagian.push('Detail dan pemesanan: ' + p.link);
+  } else if (p.link) {
+    bagian.push('Detailnya: ' + p.link);
+  }
+  if (/\b(custom|request|warna|ukuran|foto)\b/.test(t) && p.custom) {
+    bagian.push('Untuk variasi warna atau bentuk, bisa diatur saat pesan.');
+  }
+  return bagian.join(' ');
+}
+
+/**
+ * Jawaban langsung untuk pertanyaan yang datanya sudah pasti.
+ *
+ * Tujuannya: pertanyaan yang paling sering ditanya CS (harga, stok, ongkir,
+ * alamat, pembayaran, kontak) dijawab dari spreadsheet tanpa menunggu model.
+ * Mengembalikan null kalau tidak ada aturan yang cocok.
+ */
+function jawabCepat(pesan) {
+  const t = ' ' + rapikanTeks(pesan) + ' ';
+  const wa = String(NOMOR_WA || '').replace(/^62/, '0');
+  const ada = function (re) { return re.test(t); };
+  const soalPesanan = ada(/\b(pesanan|order|resi|invoice|tagihan|pembayaran sudah|sudah bayar)\b/);
+
+  if (soalPesanan) return null;
+
+  if (ada(/\b(wa|whatsapp|nomor|no hp|telepon|telpon|kontak|hubungi|admin)\b/)) {
+    return 'WhatsApp kami ' + wa + ' (tombol hijau di bawah kotak chat), Instagram @' +
+      String(INSTAGRAM || '').replace(/^@/, '') + '. Admin membalas secepatnya ya.';
+  }
+
+  if (ada(/\b(alamat|lokasi|dimana|studio|offline|maps|toko fisik)\b/)) {
+    if (!ALAMAT_STUDIO) return null;
+    return 'Studio kami di ' + ALAMAT_STUDIO + '. Kalau mau ambil sendiri atau lihat langsung, kabari dulu lewat WhatsApp ' + wa + ' ya.';
+  }
+
+  if (ada(/\b(ongkir|ongkos|pengiriman|kurir|ekspedisi|jne|jnt|sicepat|anteraja)\b/) ||
+      /kirim (ke|sampai)/.test(t)) {
+    if (!ONGKIR_FLAT) return null;
+    const kurir = String(ONGKIR_KURIR || '').split(':').filter(String)
+      .map(function (k) { return k.toUpperCase(); }).join(', ');
+    return 'Ongkir dihitung otomatis saat checkout, patokan awalnya Rp' + ONGKIR_FLAT.toLocaleString('id-ID') +
+      ' per paket' + (kurir ? ' (kurir ' + kurir + ')' : '') +
+      '. Total pastinya muncul sebelum bayar, tergantung kota dan berat paket.';
+  }
+
+  if (ada(/\b(bayar|pembayaran|transfer|qris|gopay|dana|ovo|shopeepay|cod|virtual account)\b/)) {
+    return 'Pembayaran bisa QRIS, GoPay/DANA/ShopeePay, kartu debit/kredit, atau transfer virtual account. Semua diproses lewat checkout website, jadi aman dan otomatis tercatat.';
+  }
+
+  const produk = cariProduk(pesan);
+  if (produk) return jawabProduk(produk, pesan);
+
+  if (ada(/\b(ready|stok|tersedia|sisa|kosong)\b/)) {
+    const siap = katalogData().filter(function (p) { return p.ready; });
+    if (!siap.length) return 'Saat ini semua produk sedang pre-order (dibuat setelah pesanan masuk), tapi tetap bisa dipesan ya.';
+    const nama = siap.slice(0, 12).map(function (p) { return p.nama; }).join(', ');
+    return 'Yang READY sekarang: ' + nama + (siap.length > 12 ? ', dan ' + (siap.length - 12) + ' produk lain' : '') +
+      '. Sisanya pre-order tapi tetap bisa dipesan. Lihat semua di ' + dasarWebsite() + '/#koleksi';
+  }
+
+  if (ada(/\b(custom|request|pesan khusus|dari foto|bikin sendiri|model sendiri)\b/)) {
+    return 'Bisa banget! Kirim foto referensinya lewat WhatsApp ' + wa + ', nanti dihitung harga sesuai tingkat kesulitan dan ukuran. Contoh harga custom yang sudah ada di katalog bisa dilihat di ' + dasarWebsite() + '/#koleksi';
+  }
+
+  return null;
 }
 
 function handleChat(d) {
   if (!AI_TEKS_AKTIF) return json({ ok: false, message: 'Asisten chat sedang dimatikan.' });
   if (!GEMINI_API_KEY) return json({ ok: false, message: 'GEMINI_API_KEY belum diisi di script.' });
 
+  const pesan = String(d.message || '').trim().slice(0, 800);
   const props = PropertiesService.getScriptProperties();
+  const cache = CacheService.getScriptCache();
   const hariIni = Utilities.formatDate(new Date(), ZONA, 'yyyy-MM-dd');
   const kTotal = 'chat_' + hariIni;
-  const kTamu = 'chat_' + hariIni + '_' + String(d.visitor || 'anon').slice(0, 40);
+  // Kuota per pengunjung disimpan di cache: kedaluwarsa sendiri, jadi
+  // ScriptProperties tidak menumpuk ribuan kunci dan tetap ringan dibaca.
+  const kTamu = 'chatv_' + hariIni + '_' + String(d.visitor || 'anon').slice(0, 40);
   const total = parseInt(props.getProperty(kTotal) || '0', 10);
-  const tamu = parseInt(props.getProperty(kTamu) || '0', 10);
+  const tamu = parseInt(cache.get(kTamu) || '0', 10);
   if (total >= CHAT_MAX_PER_HARI || tamu >= CHAT_MAX_PER_TAMU) {
     return json({ ok: false, message: 'Asisten sedang istirahat. Lanjut chat WhatsApp kami ya, dijawab langsung oleh Machel.' });
   }
 
+  const hitung = function () {
+    try { props.setProperty(kTotal, String(total + 1)); } catch (err) {}
+    try { cache.put(kTamu, String(tamu + 1), 21600); } catch (err) {}
+  };
+  const balas = function (teks, sumber) {
+    hitung();
+    catatChat(d, 'OK', teks);
+    return json({ ok: true, reply: teks, sumber: sumber });
+  };
+
+  // Sapaan atau pesan kosong: tidak perlu memanggil model, jawab seketika.
+  const rapi = rapikanTeks(pesan);
+  if (!pesan || /^(halo|hallo|hai|hi|hey|hello|p|assalamualaikum|assalamu alaikum|pagi|siang|sore|malam|selamat pagi|selamat siang|selamat sore|selamat malam|test|tes)( (kak|ka|min|admin|machel|semua|kakak))?$/.test(rapi)) {
+    return balas('Hai! Aku Asisten Machel 🧶 Aku bisa bantu soal harga & stok produk, cara pesan, ongkir, atau request custom dari foto. Mau tanya apa dulu?', 'sapaan');
+  }
+
+  // Pertanyaan yang datanya pasti: dijawab langsung dari spreadsheet.
+  const cepat = jawabCepat(pesan);
+  if (cepat) return balas(cepat, 'data');
+
+  // Pertanyaan yang sama persis: pakai jawaban yang sudah pernah dibuat.
+  const kunciJawab = 'chat_jwb_' + rapi.slice(0, 140);
+  const pernah = cache.get(kunciJawab);
+  if (pernah) return balas(pernah, 'cache');
+
+  const versiProduk = versiTab(T_PRODUK);
+  const versiSetting = versiTab(T_SETTING);
   const riwayat = (d.history || []).slice(-6)
-    .map(function (m) { return (m.role === 'user' ? 'Pelanggan' : 'Asisten') + ': ' + String(m.text).slice(0, 500); })
-    .join('\n');
+    .map(function (m) {
+      return (m.role === 'user' ? 'Pelanggan' : 'Kamu') + ': ' + String(m.text || '').slice(0, 300);
+    }).join('\n');
 
   const prompt =
-    'Kamu "Asisten Machel", pramuniaga ramah di website toko rajut handmade "Crochet by Machel" (Indonesia).\n' +
-    'Tugasmu menjawab pertanyaan calon pembeli dengan hangat, singkat, dan jujur, lalu mengarahkan mereka melanjutkan ke WhatsApp untuk memesan.\n\n' +
-    'ATURAN:\n' +
-    '1. Jawab dalam bahasa Indonesia santai tapi sopan. Maksimal 4 kalimat pendek. Jangan pakai emoji berlebihan (maksimal satu).\n' +
-    '2. Hanya gunakan data katalog di bawah. JANGAN mengarang produk, harga, atau janji tanggal.\n' +
-    '3. Kalau ditanya harga produk yang ada di katalog, sebutkan harganya. Kalau produk custom/request, jelaskan harganya mulai dari harga terkait dan final setelah diskusi.\n' +
-    '4. Kalau tidak tahu (mis. stok pasti, ongkir, lama pengerjaan spesifik), katakan tidak tahu pasti lalu arahkan ke WhatsApp.\n' +
-    '5. Semua boneka dibuat handmade satu per satu; produk bertanda "bisa custom" berarti pre-order (dikerjakan setelah dipesan).\n' +
-    '6. Jangan pernah menyebut kamu AI/Gemini. Jangan membahas hal di luar produk rajut, pemesanan, dan pengiriman.\n' +
-    '7. Tutup dengan satu ajakan singkat, mis. "Mau saya bantu lanjut ke WhatsApp?"\n' +
-    '8. Kalau pelanggan minta kontak/WhatsApp/nomor: tulis nomornya apa adanya, yaitu ' + NOMOR_WA.replace(/^62/, '0') +
-    ' dan sebutkan ada tombol hijau WhatsApp di bawah kotak chat ini. ' +
-    'DILARANG menulis placeholder seperti [Link WhatsApp], [link], atau tanda kurung siku apa pun. ' +
-    'DILARANG mengarang alamat website/link lain.\n' +
-    '9. Instagram kami: @' + INSTAGRAM + '. Jangan sebut kontak lain selain itu dan WhatsApp di atas.\n\n' +
-    'KATALOG SAAT INI:\n' + ringkasKatalog(40) + '\n\n' +
-    'INFO TOKO: WhatsApp ' + NOMOR_WA.replace(/^62/, '0') + ', Instagram @' + INSTAGRAM + '. ' +
-    'Pembayaran via QRIS/GoPay/DANA/ShopeePay/transfer bank atau konfirmasi WhatsApp. ' +
-    'Bisa request bentuk apa saja dari foto referensi. Pengiriman dari Indonesia, ongkir mengikuti ekspedisi.\n\n' +
+    'Kamu "Asisten Machel", pramuniaga toko rajutan handmade "Crochet by Machel" di Indonesia.\n' +
+    'Tugasmu menjawab calon pembeli dengan cepat, jelas, dan jujur, lalu mengarahkan ke WhatsApp atau checkout kalau mereka mau membeli.\n\n' +
+    'CARA MENJAWAB:\n' +
+    '1. Balas dalam bahasa yang dipakai pelanggan (Indonesia atau Inggris). Maksimal 3 kalimat pendek (±45 kata), santai dan sopan. Jangan mengulang sapaan "Halo" di setiap jawaban.\n' +
+    '2. Tulis teks biasa: tanpa markdown, tanpa tanda bintang ganda, tanpa pagar kode, tanpa daftar panjang.\n' +
+    '3. Sumber fakta HANYA katalog dan info toko di bawah. Jangan mengarang produk, harga, stok, ongkir, atau tanggal selesai. Kalau datanya tidak ada, bilang belum tahu pasti lalu arahkan ke WhatsApp.\n' +
+    '4. Kalau pelanggan menyebut produk yang ada di katalog, sebutkan harganya dan statusnya. READY berarti bisa langsung dikirim, PRE-ORDER berarti dikerjakan setelah pesanan masuk.\n' +
+    '5. Kalau pelanggan minta link produk, tulis link produk itu apa adanya dari katalog, satu link saja, tanpa tanda kurung.\n' +
+    '6. Kalau ditanya "ada yang ready?", sebutkan hanya produk berstatus READY. Kalau tidak ada yang ready, katakan semua sedang pre-order dan tetap bisa dipesan.\n' +
+    '7. Ongkir, alamat studio, pembayaran, dan kontak: pakai INFO TOKO apa adanya. Jangan mengarang angka ongkir lain.\n' +
+    '8. Untuk custom dari foto: bilang bisa, harga menyesuaikan tingkat kesulitan dan mulai dari harga produk custom yang ada di katalog, lalu minta foto referensi lewat WhatsApp.\n' +
+    '9. Jangan pernah menyebut dirimu AI, model, atau sistem. Jangan membahas hal di luar rajutan, pesanan, pembayaran, dan pengiriman.\n' +
+    '10. Jangan menutup setiap jawaban dengan pertanyaan balik. Ajakan menulis WhatsApp atau checkout hanya kalau pelanggan terlihat mau membeli.\n\n' +
+    'INFO TOKO:\n' + infoTokoChat(versiSetting) + '\n\n' +
+    'KATALOG:\n' + katalogChat() + '\n\n' +
     (riwayat ? 'PERCAKAPAN SEBELUMNYA:\n' + riwayat + '\n\n' : '') +
-    'Pertanyaan pelanggan: ' + String(d.message || '').slice(0, 800) + '\n\nJawabanmu:';
+    'Pertanyaan pelanggan: ' + pesan + '\n\nJawabanmu:';
 
   let jawab = '';
   try {
-    jawab = panggilGeminiTeks(prompt, 400);
+    jawab = panggilGeminiTeks(prompt, 160);
   } catch (err) {
     catatChat(d, 'GAGAL', String(err.message || err));
     return json({ ok: false, message: 'Maaf, asisten sedang sibuk. Chat WhatsApp kami saja ya, dijawab langsung.' });
   }
   if (!jawab) return json({ ok: false, message: 'Maaf, belum bisa menjawab itu. Coba tanya lewat WhatsApp ya.' });
 
-  props.setProperty(kTotal, String(total + 1));
-  props.setProperty(kTamu, String(tamu + 1));
-  catatChat(d, 'OK', jawab);
+  // Jaring pengaman: buang sisa penanda markdown yang tidak terbaca di balon chat.
+  jawab = jawab.replace(/\*\*/g, '').replace(/__/g, '').replace(/^#{1,6}\s*/gm, '').trim();
+  try { cache.put(kunciJawab, jawab, 21600); } catch (err) {}
 
-  return json({ ok: true, reply: jawab });
+  return balas(jawab, 'model');
 }
 
 function catatChat(d, status, jawab) {
   const sh = sheet('ChatLog');
   if (sh.getLastRow() === 0) {
-    sh.appendRow(['waktu', 'pengunjung', 'pertanyaan', 'jawaban', 'status']);
+    sh.getRange(1, 1, 1, 5).setValues([['waktu', 'pengunjung', 'pertanyaan', 'jawaban', 'status']]);
     sh.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#E9F0E2');
     sh.setFrozenRows(1);
     sh.setColumnWidth(3, 320); sh.setColumnWidth(4, 420);
   }
-  sh.appendRow([waktuWib(), String(d.visitor || ''), String(d.message || '').slice(0, 500), String(jawab || '').slice(0, 900), status]);
+  // setValues jauh lebih cepat daripada appendRow (appendRow memindai seluruh sheet).
+  const isi = [waktuWib(), String(d.visitor || ''), String(d.message || '').slice(0, 500),
+    String(jawab || '').slice(0, 900), status];
+  sh.getRange(sh.getLastRow() + 1, 1, 1, 5).setValues([isi]);
 }
 
 /* ---------- 1f. PENULIS DESKRIPSI PRODUK (gratis) ---------- */
