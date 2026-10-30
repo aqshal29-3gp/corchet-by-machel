@@ -23,3 +23,6 @@ apps-script-konektor.gs
 # Alat bantu lokal (penambal template, dsb) - bukan bagian dari website.
 alat/
 .venv-sync/
+
+# lock proses sync katalog publik
+.sync-katalog-publik.lock
