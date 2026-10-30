@@ -740,7 +740,7 @@ function adminInvoiceManual(d) {
 
   const itemsHtml = rapi.map(function (i) {
     return `<tr>
-        <td style="padding: 12px 0; border-bottom: 1px dashed #cedbc0; color: #2c3327;">${i.name}</td>
+        <td style="padding: 12px 0; border-bottom: 1px dashed #cedbc0; color: #2c3327;">${esc(i.name)}</td>
         <td style="padding: 12px 0; border-bottom: 1px dashed #cedbc0; color: #2c3327; text-align: center;">${i.qty}</td>
         <td style="padding: 12px 0; border-bottom: 1px dashed #cedbc0; color: #2c3327; text-align: right;">${rp(i.price)}</td>
         <td style="padding: 12px 0; border-bottom: 1px dashed #cedbc0; color: #2c3327; text-align: right; font-weight: 700;">${rp(i.price * i.qty)}</td>
@@ -768,7 +768,7 @@ function adminInvoiceManual(d) {
         
         .receipt-container {
             background-color: #ffffff;
-            width: 10${d.diskon ? '-' + rp(diskon) : '0'};
+            width: 100%;
             max-width: 600px;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(61,44,37,0.08);
@@ -799,7 +799,7 @@ function adminInvoiceManual(d) {
             width: 100px;
             height: 100px;
             object-fit: cover;
-            border-radius: 5${d.diskon ? '-' + rp(diskon) : '0'};
+            border-radius: 50%;
             border: 4px solid #fff;
             margin-bottom: 15px;
             background-color: #fff;
@@ -852,7 +852,7 @@ function adminInvoiceManual(d) {
         }
         
         table {
-            width: 10${d.diskon ? '-' + rp(diskon) : '0'};
+            width: 100%;
             border-collapse: collapse;
         }
         
@@ -951,19 +951,19 @@ function adminInvoiceManual(d) {
             </div>
             <div class="info-group">
                 <span class="info-label">Tanggal</span>
-                <span class="info-value">16/09/2026 20:27 WIB</span>
+                <span class="info-value">${Utilities.formatDate(new Date(), ZONA, 'dd/MM/yyyy HH:mm')} WIB</span>
             </div>
             <div class="info-group">
                 <span class="info-label">Pelanggan</span>
-                <span class="info-value">${String(b.name)}</span>
+                <span class="info-value">${esc(String(b.name).trim())}</span>
             </div>
             <div class="info-group">
                 <span class="info-label">Cara Bayar</span>
-                <span class="info-value">Transfer BCA</span>
+                <span class="info-value">${esc(d.caraBayar || 'Transfer / tunai')}</span>
             </div>
             <div class="info-group" style="grid-column: 1 / -1;">
                 <span class="info-label">Alamat Pengiriman</span>
-                <span class="info-value">Jl. Pegangsaan Timur No 56 (${String(b.phone || '-')})</span>
+                <span class="info-value">${esc(d.alamat || '-')} (${esc(b.phone || '-')})</span>
             </div>
         </div>
         
@@ -974,14 +974,11 @@ function adminInvoiceManual(d) {
                         <th>Deskripsi</th>
                         <th style="width: 50px; text-align: center;">Jml</th>
                         <th class="text-right">Harga</th>
+                        <th class="text-right">Jumlah</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td><strong>Boneka Amigurumi Kucing (Tes)</strong></td>
-                        <td style="text-align: center;">1</td>
-                        <td class="text-right">Rp150,000</td>
-                    </tr>
+                    ${itemsHtml}
                 </tbody>
             </table>
         </div>
@@ -989,15 +986,19 @@ function adminInvoiceManual(d) {
         <div class="summary-section">
             <div class="summary-row">
                 <span>Subtotal</span>
-                <span>Rp150,000</span>
+                <span>${rp(subtotal)}</span>
             </div>
             <div class="summary-row">
                 <span>Ongkos Kirim</span>
-                <span>Rp15,000</span>
+                <span>${rp(ongkir)}</span>
+            </div>
+            <div class="summary-row">
+                <span>Diskon</span>
+                <span>${diskon ? '-' + rp(diskon) : rp(0)}</span>
             </div>
             <div class="summary-row total">
                 <span>Total</span>
-                <span>Rp165,000</span>
+                <span>${rp(total)}</span>
             </div>
         </div>
         
@@ -2991,6 +2992,25 @@ function sheetStat() {
  * Menambah 1 pada penghitung (tanggal, jenis, nama).
  * jenis: kunjungan | lihat_produk | keranjang | checkout
  */
+/**
+ * Normalisasi isi kolom tanggal jadi 'yyyy-MM-dd'.
+ * Sel tanggal di Sheets terbaca sebagai Date (bukan string), sehingga
+ * perbandingan String(nilai) === 'yyyy-MM-dd' selalu gagal dan setiap
+ * kunjungan menambah baris baru. Fungsi ini menyeragamkan Date, serial
+ * angka, dan teks.
+ */
+function tglKunci_(v) {
+  if (v instanceof Date && !isNaN(v.getTime())) {
+    return Utilities.formatDate(v, ZONA, 'yyyy-MM-dd');
+  }
+  if (typeof v === 'number' && v > 20000) {
+    return Utilities.formatDate(new Date(Date.UTC(1899, 11, 30) + v * 864e5), ZONA, 'yyyy-MM-dd');
+  }
+  const s = String(v === null || v === undefined ? '' : v).trim();
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? m[0] : s;
+}
+
 function handleStat(d) {
   if (!STAT_AKTIF) return json({ ok: true, off: true });
   const jenis = String(d.jenis || '').toLowerCase().replace(/[^a-z_]/g, '').slice(0, 20);
@@ -3004,7 +3024,7 @@ function handleStat(d) {
     const sh = sheetStat();
     const rows = sh.getDataRange().getValues();
     for (let i = 1; i < rows.length; i++) {
-      if (String(rows[i][0]) === tgl && String(rows[i][1]) === jenis && String(rows[i][2]) === nama) {
+      if (tglKunci_(rows[i][0]) === tgl && String(rows[i][1]) === jenis && String(rows[i][2]) === nama) {
         sh.getRange(i + 1, 4).setValue((parseInt(rows[i][3], 10) || 0) + 1);
         return json({ ok: true });
       }
@@ -3034,8 +3054,8 @@ function statObjek(hariMinta) {
 
   const total = {}, produk = {}, harian = {};
   for (let i = 1; i < rows.length; i++) {
-    const tgl = String(rows[i][0]);
-    if (tgl < batas) continue;
+    const tgl = tglKunci_(rows[i][0]);
+    if (!tgl || tgl < batas) continue;
     const j = String(rows[i][1]), n = String(rows[i][2]), v = parseInt(rows[i][3], 10) || 0;
     total[j] = (total[j] || 0) + v;
     if (j === 'lihat_produk') produk[n] = (produk[n] || 0) + v;
@@ -3088,7 +3108,7 @@ function ringkasanStatistik() {
   const batas = Utilities.formatDate(new Date(Date.now() - 30 * 864e5), ZONA, 'yyyy-MM-dd');
   const total = {}, produk = {};
   for (let i = 1; i < rows.length; i++) {
-    if (String(rows[i][0]) < batas) continue;
+    if (!tglKunci_(rows[i][0]) || tglKunci_(rows[i][0]) < batas) continue;
     const j = String(rows[i][1]), n = String(rows[i][2]), v = parseInt(rows[i][3], 10) || 0;
     total[j] = (total[j] || 0) + v;
     if (j === 'lihat_produk') produk[n] = (produk[n] || 0) + v;
