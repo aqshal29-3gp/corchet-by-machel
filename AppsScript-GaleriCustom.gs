@@ -1915,17 +1915,36 @@ function rapikanTeks(s) {
 function cariProduk(pesan) {
   const tanya = ' ' + rapikanTeks(pesan) + ' ';
   const daftar = katalogData();
+  if (!daftar.length) return null;
+
+  // Kata yang hanya dipakai satu produk ("koya", "huggy", "berrygirl") sudah
+  // cukup untuk mengenali produk, tanpa perlu seluruh namanya disebut.
+  const jumlahKata = {};
+  daftar.forEach(function (p) {
+    rapikanTeks(p.nama).split(' ').forEach(function (k) {
+      if (k.length >= 3) jumlahKata[k] = (jumlahKata[k] || 0) + 1;
+    });
+  });
+
   let terbaik = null, skor = 0;
   for (let i = 0; i < daftar.length; i++) {
     const nama = rapikanTeks(daftar[i].nama);
     if (!nama) continue;
     if (tanya.indexOf(' ' + nama + ' ') > -1) return daftar[i];
     const kata = nama.split(' ').filter(function (k) { return k.length >= 3; });
-    let cocok = 0;
-    for (let j = 0; j < kata.length; j++) if (tanya.indexOf(' ' + kata[j] + ' ') > -1) cocok++;
-    if (!kata.length || !cocok) continue;
-    const nilai = cocok / kata.length;
-    if (nilai > skor && (kata.length === 1 || cocok >= 2)) { skor = nilai; terbaik = daftar[i]; }
+    let cocok = 0, khas = 0;
+    for (let j = 0; j < kata.length; j++) {
+      if (tanya.indexOf(' ' + kata[j] + ' ') > -1) {
+        cocok++;
+        if (jumlahKata[kata[j]] === 1) khas++;
+      }
+    }
+    if (!cocok) continue;
+    const rasio = cocok / kata.length;
+    // Perlu kata khas, atau minimal separuh nama produk disebut.
+    if (!khas && rasio < 0.5) continue;
+    const nilai = khas ? 2 + khas : rasio;
+    if (nilai > skor) { skor = nilai; terbaik = daftar[i]; }
   }
   return terbaik;
 }
@@ -1985,6 +2004,15 @@ function jawabCepat(pesan) {
     return 'Pembayaran bisa QRIS, GoPay/DANA/ShopeePay, kartu debit/kredit, atau transfer virtual account. Semua diproses lewat checkout website, jadi aman dan otomatis tercatat.';
   }
 
+  if (ada(/\b(makasih|terima kasih|thanks|thank you|thx)\b/)) {
+    return 'Sama-sama kak 🙏 Kalau nanti mau pesan atau tanya-tanya lagi, tinggal chat sini atau WhatsApp ' + wa + ' ya.';
+  }
+
+  if (ada(/\b(nego|diskon|potongan harga|bisa kurang|harga pas|promo|bundling)\b/) ||
+      /(lebih murah|boleh kurang|bisa nego)/.test(t)) {
+    return 'Harga kami sudah pas ya kak, karena setiap boneka dirajut satu per satu. Tapi kalau ambil beberapa sekaligus, ongkirnya jadi lebih hemat karena digabung dalam satu paket.';
+  }
+
   const produk = cariProduk(pesan);
   if (produk) return jawabProduk(produk, pesan);
 
@@ -2033,7 +2061,7 @@ function handleChat(d) {
 
   // Sapaan atau pesan kosong: tidak perlu memanggil model, jawab seketika.
   const rapi = rapikanTeks(pesan);
-  if (!pesan || /^(halo|hallo|hai|hi|hey|hello|p|assalamualaikum|assalamu alaikum|pagi|siang|sore|malam|selamat pagi|selamat siang|selamat sore|selamat malam|test|tes)( (kak|ka|min|admin|machel|semua|kakak))?$/.test(rapi)) {
+  if (!pesan || /^(halo|hallo|hai|hi|hey|hello|p|permisi|assalamualaikum|assalamu alaikum|pagi|siang|sore|malam|selamat pagi|selamat siang|selamat sore|selamat malam|test|tes|kak|ka|min|admin|kakak)( (kak|ka|min|admin|machel|semua|kakak))?$/.test(rapi)) {
     return balas('Hai! Aku Asisten Machel 🧶 Aku bisa bantu soal harga & stok produk, cara pesan, ongkir, atau request custom dari foto. Mau tanya apa dulu?', 'sapaan');
   }
 
@@ -2042,7 +2070,8 @@ function handleChat(d) {
   if (cepat) return balas(cepat, 'data');
 
   // Pertanyaan yang sama persis: pakai jawaban yang sudah pernah dibuat.
-  const kunciJawab = 'chat_jwb_' + rapi.slice(0, 140);
+  // versi ikut di kunci: ubah prompt/aturan -> naikkan versi, cache lama tidak dipakai
+  const kunciJawab = 'chat_jwb_v3_' + rapi.slice(0, 140);
   const pernah = cache.get(kunciJawab);
   if (pernah) return balas(pernah, 'cache');
 
