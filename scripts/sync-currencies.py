@@ -8,7 +8,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "currencies.json"
 SHEET_ID = "1Lta0Um9OUQUaSAlQY495bGL9PXCnTRprIs1xdnUv0GI"
-GAPI = "/home/pusdatinkp/.hermes/profiles/pengelola_website/skills/productivity/google-workspace/scripts/google_api.py"
+GAPI_CANDIDATES = [
+    "/home/pusdatinkp/.hermes/profiles/manajer_toko_machelcrochet/skills/productivity/google-workspace/scripts/google_api.py",
+    "/home/pusdatinkp/.hermes/profiles/pengelola_website/skills/productivity/google-workspace/scripts/google_api.py",
+]
+GAPI = next((p for p in GAPI_CANDIDATES if Path(p).is_file()), GAPI_CANDIDATES[0])
 ALLOWED = {"IDR", "SGD", "MYR"}
 SIMBOL = {"IDR": "Rp", "SGD": "S$", "MYR": "RM"}
 
@@ -19,8 +23,11 @@ def num(s):
 
 
 def main():
+    # Pakai interpreter yang sedang menjalankan script ini, bukan "python" dari PATH:
+    # di cron PATH=/usr/bin:/bin sehingga "python" menunjuk python sistem tanpa
+    # library Google -> gagal. sys.executable selalu benar.
     raw = subprocess.run(
-        ["python", GAPI, "sheets", "get", SHEET_ID, "MataUang!A1:E50"],
+        [sys.executable, GAPI, "sheets", "get", SHEET_ID, "MataUang!A1:E50"],
         capture_output=True, text=True, check=True,
     ).stdout
     rows = json.loads(raw)

@@ -13,14 +13,20 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "status-toko.json"
 SHEET_ID = "1Lta0Um9OUQUaSAlQY495bGL9PXCnTRprIs1xdnUv0GI"
-GAPI = "/home/pusdatinkp/.hermes/profiles/pengelola_website/skills/productivity/google-workspace/scripts/google_api.py"
+GAPI_CANDIDATES = [
+    "/home/pusdatinkp/.hermes/profiles/manajer_toko_machelcrochet/skills/productivity/google-workspace/scripts/google_api.py",
+    "/home/pusdatinkp/.hermes/profiles/pengelola_website/skills/productivity/google-workspace/scripts/google_api.py",
+]
+GAPI = next((p for p in GAPI_CANDIDATES if Path(p).is_file()), GAPI_CANDIDATES[0])
 LIBUR_TRUE = {"ya", "yes", "true", "aktif", "active", "1", "libur", "tutup"}
 DEFAULT_PESAN = "Mohon maaf, toko sedang dalam perbaikan (maintenance) sistem. Checkout untuk sementara ditutup."
 
 
 def main():
+    # sys.executable, bukan "python": di cron PATH=/usr/bin:/bin sehingga
+    # "python" menunjuk python sistem tanpa library Google.
     raw = subprocess.run(
-        ["python", GAPI, "sheets", "get", SHEET_ID, "Pengaturan!A1:B100"],
+        [sys.executable, GAPI, "sheets", "get", SHEET_ID, "Pengaturan!A1:B100"],
         capture_output=True, text=True, check=True,
     ).stdout
     rows = json.loads(raw)

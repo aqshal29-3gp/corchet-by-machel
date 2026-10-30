@@ -7,17 +7,28 @@ set -uo pipefail
 REPO="/home/pusdatinkp/machel-rebuild"
 LOGDIR="/home/pusdatinkp/machel-backups/cron-logs"
 LOG="$LOGDIR/sync-currencies.log"
+PY="$REPO/.venv-sync/bin/python3"
 mkdir -p "$LOGDIR"
+
+# Token Google dicari di $HERMES_HOME. Di cron variabel ini kosong, jadi default
+# ke ~/.hermes yang tidak punya google_token.json -> "Not authenticated".
+export HERMES_HOME="${HERMES_HOME:-/home/pusdatinkp/.hermes/profiles/manajer_toko_machelcrochet}"
 
 ts() { date -u '+%Y-%m-%dT%H:%M:%SZ'; }
 log() { echo "[$(ts)] $*" >>"$LOG"; }
 
 cd "$REPO" || { log "FATAL cd $REPO failed"; exit 1; }
 
+# Interpreter harus punya library Google (google-auth + googleapiclient).
+if [ ! -x "$PY" ]; then
+  log "FATAL interpreter $PY tidak ada; jalankan: /usr/bin/python3 -m venv .venv-sync && ./.venv-sync/bin/pip install google-auth google-api-python-client"
+  exit 1
+fi
+
 log "=== run start ==="
 
 # 1) Sync (fail-safe: leaves currencies.json untouched on error, exits non-zero).
-OUT="$(python3 scripts/sync-currencies.py 2>&1)"
+OUT="$("$PY" scripts/sync-currencies.py 2>&1)"
 RC=$?
 log "sync rc=$RC out=$OUT"
 if [ "$RC" -ne 0 ]; then
