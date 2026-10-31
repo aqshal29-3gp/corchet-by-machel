@@ -135,6 +135,7 @@ const NOMOR_WA    = P('NOMOR_WA', '6281285006165');
 // Kosongkan untuk memakai teks bawaan (arahkan ke WhatsApp).
 const ALAMAT_STUDIO = P('ALAMAT_STUDIO', '');
 const INSTAGRAM   = P('INSTAGRAM', 'machel.crochet');
+const SHOPEE_TOKO = P('SHOPEE_URL', 'https://shopee.co.id/shop/56653286');
 const MERCHANT_SHEET_ID = P('MERCHANT_SHEET_ID', '');
 const MERCHANT_BRAND    = P('MERCHANT_BRAND', '');
 // Kategori produk Google WAJIB salah satu nilai dari taksonomi resmi. Angka ID
@@ -1985,9 +1986,22 @@ function jawabCepat(pesan) {
       String(INSTAGRAM || '').replace(/^@/, '') + '. Admin membalas secepatnya ya.';
   }
 
-  if (ada(/\b(alamat|lokasi|dimana|studio|offline|maps|toko fisik)\b/)) {
+  // Link peta ditanyakan terpisah karena butuh URL, bukan cuma teks alamat.
+  if (ada(/\b(gmap|gmaps|google maps|maps|petunjuk arah|shareloc|share loc|titik lokasi)\b/)) {
     if (!ALAMAT_STUDIO) return null;
-    return 'Studio kami di ' + ALAMAT_STUDIO + '. Kalau mau ambil sendiri atau lihat langsung, kabari dulu lewat WhatsApp ' + wa + ' ya.';
+    return 'Ini titik studionya: https://www.google.com/maps/search/?api=1&query=' +
+      encodeURIComponent(ALAMAT_STUDIO) + ' — alamatnya ' + ALAMAT_STUDIO + '.';
+  }
+
+  if (ada(/\b(alamat|lokasi|dimana|studio|offline|toko fisik)\b/)) {
+    if (!ALAMAT_STUDIO) return null;
+    return 'Studio kami di ' + ALAMAT_STUDIO + '. Peta: https://www.google.com/maps/search/?api=1&query=' +
+      encodeURIComponent(ALAMAT_STUDIO) + '. Kalau mau ambil sendiri atau lihat langsung, kabari dulu lewat WhatsApp ' + wa + ' ya.';
+  }
+
+  // Pelanggan yang menyebut Shopee biasanya mau belanja di sana, bukan di website.
+  if (ada(/\b(shopee|shope|sopee)\b/)) {
+    return 'Toko Shopee kami: ' + SHOPEE_TOKO + ' — produk dan harganya sama dengan di website, semua pre-order dikerjakan setelah pesanan masuk.';
   }
 
   if (ada(/\b(ongkir|ongkos|pengiriman|kurir|ekspedisi|jne|jnt|sicepat|anteraja)\b/) ||
@@ -2004,7 +2018,7 @@ function jawabCepat(pesan) {
     return 'Pembayaran bisa QRIS, GoPay/DANA/ShopeePay, kartu debit/kredit, atau transfer virtual account. Semua diproses lewat checkout website, jadi aman dan otomatis tercatat.';
   }
 
-  if (ada(/\b(makasih|terima kasih|thanks|thank you|thx)\b/)) {
+  if (ada(/\b(makasih|terimakasih|terima kasih|thanks|thank you|thx|trims)\b/)) {
     return 'Sama-sama kak 🙏 Kalau nanti mau pesan atau tanya-tanya lagi, tinggal chat sini atau WhatsApp ' + wa + ' ya.';
   }
 
