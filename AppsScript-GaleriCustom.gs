@@ -134,6 +134,10 @@ const NOMOR_WA    = P('NOMOR_WA', '6281285006165');
 // pesanan LUNAS, dan saat status pesanan pickup masuk tahap "siap diambil".
 // Kosongkan untuk memakai teks bawaan (arahkan ke WhatsApp).
 const ALAMAT_STUDIO = P('ALAMAT_STUDIO', '');
+// Titik peta sengaja dipisah dari alamat lengkap: alamat di atas terlalu panjang
+// dan sering terpotong saat dikirim sebagai tautan chat. Ubah di Pengaturan
+// (baris MAPS_QUERY) kalau titiknya bergeser.
+const MAPS_QUERY = P('MAPS_QUERY', 'Cluster Quince Blossom Cikarageman Setu Bekasi');
 const INSTAGRAM   = P('INSTAGRAM', 'machel.crochet');
 const SHOPEE_TOKO = P('SHOPEE_URL', 'https://shopee.co.id/shop/56653286');
 const MERCHANT_SHEET_ID = P('MERCHANT_SHEET_ID', '');
@@ -1908,6 +1912,13 @@ function infoTokoChat(versi) {
 }
 
 /** Huruf kecil, tanpa tanda baca — untuk pencocokan kata kunci. */
+/** Tautan peta ringkas: tanpa tanda baca, aman dibuka dari aplikasi chat mana pun. */
+function linkPeta_() {
+  const q = String(MAPS_QUERY || '').trim();
+  if (!q) return '';
+  return 'https://maps.google.com/?q=' + encodeURIComponent(q).replace(/%20/g, '+');
+}
+
 function rapikanTeks(s) {
   return String(s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
 }
@@ -1986,17 +1997,33 @@ function jawabCepat(pesan) {
       String(INSTAGRAM || '').replace(/^@/, '') + '. Admin membalas secepatnya ya.';
   }
 
+  // Pengunjung kadang gagal membuka tautan (terpotong di WhatsApp atau browser
+  // lama). Kirim ulang tautan penting dalam bentuk paling sederhana, satu per
+  // baris, tanpa tanda baca penutup.
+  if (ada(/\b(link|tautan|url)\b/) &&
+      ada(/\b(gabisa|gak bisa|gakbisa|tidak bisa|nggak bisa|ga bisa|error|kosong|blank|rusak|gagal)\b/)) {
+    const petaRusak = linkPeta_();
+    const baris = ['Maaf ya kalau tautannya tidak terbuka. Coba yang ini:'];
+    baris.push('Katalog: https://machelcrochet.my.id/#koleksi');
+    if (petaRusak) baris.push('Peta studio: ' + petaRusak);
+    baris.push('WhatsApp: https://wa.me/' + String(NOMOR_WA || '').replace(/\D/g, ''));
+    return baris.join('\n');
+  }
+
   // Link peta ditanyakan terpisah karena butuh URL, bukan cuma teks alamat.
   if (ada(/\b(gmap|gmaps|google maps|maps|petunjuk arah|shareloc|share loc|titik lokasi)\b/)) {
-    if (!ALAMAT_STUDIO) return null;
-    return 'Ini titik studionya: https://www.google.com/maps/search/?api=1&query=' +
-      encodeURIComponent(ALAMAT_STUDIO) + ' — alamatnya ' + ALAMAT_STUDIO + '.';
+    const petaSaja = linkPeta_();
+    if (!petaSaja) return null;
+    return 'Ini titik studionya:\n' + petaSaja +
+      (ALAMAT_STUDIO ? '\n\n' + ALAMAT_STUDIO : '');
   }
 
   if (ada(/\b(alamat|lokasi|dimana|studio|offline|toko fisik)\b/)) {
     if (!ALAMAT_STUDIO) return null;
-    return 'Studio kami di ' + ALAMAT_STUDIO + '. Peta: https://www.google.com/maps/search/?api=1&query=' +
-      encodeURIComponent(ALAMAT_STUDIO) + '. Kalau mau ambil sendiri atau lihat langsung, kabari dulu lewat WhatsApp ' + wa + ' ya.';
+    const petaAlamat = linkPeta_();
+    return 'Studio kami di ' + ALAMAT_STUDIO + '.' +
+      (petaAlamat ? '\n\nPeta: ' + petaAlamat : '') +
+      '\n\nKalau mau ambil sendiri atau lihat langsung, kabari dulu lewat WhatsApp ' + wa + ' ya.';
   }
 
   // Pelanggan yang menyebut Shopee biasanya mau belanja di sana, bukan di website.
@@ -2085,7 +2112,7 @@ function handleChat(d) {
 
   // Pertanyaan yang sama persis: pakai jawaban yang sudah pernah dibuat.
   // versi ikut di kunci: ubah prompt/aturan -> naikkan versi, cache lama tidak dipakai
-  const kunciJawab = 'chat_jwb_v3_' + rapi.slice(0, 140);
+  const kunciJawab = 'chat_jwb_v4_' + rapi.slice(0, 140);
   const pernah = cache.get(kunciJawab);
   if (pernah) return balas(pernah, 'cache');
 
