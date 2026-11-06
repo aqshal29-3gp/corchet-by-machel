@@ -33,6 +33,18 @@ Code.sebelum-*.gs
 Code.live-*.gs
 Code.fixed*.gs
 
+# Berkas kerja lama yang dulu ikut ter-commit padahal tidak dipakai website.
+# GitHub Pages menyajikan semua isi repo, jadi berkas ini bisa dibuka publik:
+# - salinan index.html versi lama (6,8 MB, membingungkan + duplikat kode)
+# - tangkapan layar & gambar tempelan saat mendesain
+# - foto review pelanggan versi asli (privasi)
+# Semua sudah dipindah ke ~/machel-backups/legacy/.
+.backup-index-*.html
+index-before-*.html
+uploads/
+private-review-*/
+
+
 # Peta kode hasil graphify — dibuat ulang tiap kali dijalankan (5 MB, 37 berkas).
 # Dulu ikut ter-commit sehingga repo selalu terlihat kotor tiap graphify dipanggil.
 graphify-out/
