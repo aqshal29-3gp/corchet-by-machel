@@ -27,6 +27,12 @@ alat/
 # lock proses sync katalog publik
 .sync-katalog-publik.lock
 
+# Cadangan kode Apps Script sebelum ditambal (250 KB per berkas, isinya
+# duplikat penuh Code.gs). Disimpan di ~/machel-backups/apps-script, bukan repo.
+Code.sebelum-*.gs
+Code.live-*.gs
+Code.fixed*.gs
+
 # Peta kode hasil graphify — dibuat ulang tiap kali dijalankan (5 MB, 37 berkas).
 # Dulu ikut ter-commit sehingga repo selalu terlihat kotor tiap graphify dipanggil.
 graphify-out/
