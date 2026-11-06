@@ -1993,8 +1993,16 @@ function jawabCepat(pesan) {
   if (soalPesanan) return null;
 
   if (ada(/\b(wa|whatsapp|nomor|no hp|telepon|telpon|kontak|hubungi|admin)\b/)) {
-    return 'WhatsApp kami ' + wa + ' (tombol hijau di bawah kotak chat), Instagram @' +
+    let teksKontak = 'WhatsApp kami ' + wa + ' (tombol hijau di bawah kotak chat), Instagram @' +
       String(INSTAGRAM || '').replace(/^@/, '') + '. Admin membalas secepatnya ya.';
+    // Pengunjung sering minta kontak sekaligus alamat dalam satu kalimat. Kalau
+    // alamatnya tidak ikut, mereka harus bertanya dua kali ("alamat tokonya?").
+    if (ALAMAT_STUDIO && ada(/\b(alamat|lokasi|studio|tempat|dimana|mana)/)) {
+      const petaKontak = linkPeta_();
+      teksKontak += '\n\nStudio kami di ' + ALAMAT_STUDIO + '.' +
+        (petaKontak ? '\nPeta: ' + petaKontak : '');
+    }
+    return teksKontak;
   }
 
   // Pengunjung kadang gagal membuka tautan (terpotong di WhatsApp atau browser
@@ -2018,7 +2026,7 @@ function jawabCepat(pesan) {
       (ALAMAT_STUDIO ? '\n\n' + ALAMAT_STUDIO : '');
   }
 
-  if (ada(/\b(alamat|lokasi|dimana|studio|offline|toko fisik)\b/)) {
+  if (ada(/\b(alamat|lokasi|dimana|studio|offline|toko fisik)/)) {
     if (!ALAMAT_STUDIO) return null;
     const petaAlamat = linkPeta_();
     return 'Studio kami di ' + ALAMAT_STUDIO + '.' +
@@ -2112,7 +2120,7 @@ function handleChat(d) {
 
   // Pertanyaan yang sama persis: pakai jawaban yang sudah pernah dibuat.
   // versi ikut di kunci: ubah prompt/aturan -> naikkan versi, cache lama tidak dipakai
-  const kunciJawab = 'chat_jwb_v4_' + rapi.slice(0, 140);
+  const kunciJawab = 'chat_jwb_v6_' + rapi.slice(0, 140);
   const pernah = cache.get(kunciJawab);
   if (pernah) return balas(pernah, 'cache');
 
